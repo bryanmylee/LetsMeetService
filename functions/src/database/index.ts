@@ -43,7 +43,21 @@ export async function createNewEvent(
  * @returns A promise that resolves to an object describing an event.
  */
 export async function getEvent(eventUrl: string) {
-  return (await getQueryDoc(eventUrl)).data();
+  const queryDoc = await getQueryDoc(eventUrl);
+  const event = queryDoc.data() as {
+    title: string,
+    eventUrl: string,
+    description: string,
+    admin: string,
+    scheduleInMs: { start: number, end: number }[]
+  };
+  const querySnapshot = await queryDoc.ref.collection('user').get();
+  const userSchedulesEntries = querySnapshot.docs.map((doc) =>
+      [ doc.id, doc.data().scheduleInMs ]);
+  const userSchedulesInMs = Object.fromEntries(userSchedulesEntries) as {
+    [username: string]: { start: number, end: number }[]
+  };
+  return { ...event, userSchedulesInMs };
 }
 
 /**
