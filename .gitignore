@@ -64,5 +64,5 @@ node_modules/
 # dotenv environment variables file
 .env
 
-# Secret keys
-credentials.json
+# Admin service key
+key.json
