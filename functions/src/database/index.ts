@@ -1,5 +1,6 @@
 import * as admin from 'firebase-admin';
 import { generateId } from 'gfycat-ids';
+import UserType from '../types/UserType';
 
 admin.initializeApp({
   credential: admin.credential.applicationDefault(),
@@ -63,11 +64,6 @@ async function getQueryDoc(eventUrl: string) {
   }
   return queryDocs[0];
 }
-
-export enum UserType {
-  ADMIN,
-  DEFAULT,
-};
 
 /**
  * Add a new user to an event.
