@@ -1,8 +1,6 @@
 import * as functions from 'firebase-functions';
 import express from 'express';
 
-import Interval from './types/Interval';
-import { generatePasswordHash } from './authorization';
 import { createNewEvent, getEvent } from './database';
 import { applyMiddlewares } from './middlewares';
 
@@ -13,18 +11,16 @@ applyMiddlewares(app);
 app.post('/new', async (req, res) => {
   try {
     // Parse the request
-    const { username, password, title, description, eventIntervals }: {
-      username: string, password: string,
-      title: string, description: string,
-      eventIntervals: { start: number, end: number }[]
+    const { username, title, description, scheduleInMs }: {
+      username: string, title: string, description: string,
+      scheduleInMs: { start: number, end: number }[]
     } = req.body;
-    const parsedIntervals: Interval[] = eventIntervals.map(Interval.fromMillis);
-    const passwordHash = await generatePasswordHash(password);
-    console.log('passwordHash', passwordHash);
+    if (scheduleInMs == null || scheduleInMs.length === 0) {
+      throw new Error('scheduleInMs cannot be empty');
+    }
     // Handle database logic
-    const { newId, eventUrl } = await createNewEvent(
-        title, description, username, parsedIntervals);
-    console.log('newId', newId);
+    const { eventUrl } = await createNewEvent(
+        title, description, username, scheduleInMs);
     // Return a response
     res.send({ eventUrl });
   } catch (err) {
