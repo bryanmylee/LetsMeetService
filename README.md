@@ -1,4 +1,4 @@
-# LetsMeetFirebase
+# LetsMeetService
 
 A serverless REST API and authentication service for [LetsMeet](https://github.com/bryanmylee/LetsMeetWeb) built on [Cloud Firestore](https://firebase.google.com/docs/firestore).
 
