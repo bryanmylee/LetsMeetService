@@ -1,7 +1,8 @@
 import * as functions from 'firebase-functions';
 import express from 'express';
 
-import { createNewEvent, getEvent } from './database';
+import { generatePasswordHash } from './authorization';
+import { createNewEvent, getEvent, insertNewUser } from './database';
 import { applyMiddlewares } from './middlewares';
 
 const app = express();
@@ -23,6 +24,32 @@ app.post('/new', async (req, res) => {
         title, description, username, scheduleInMs);
     // Return a response
     res.send({ eventUrl });
+  } catch (err) {
+    res.status(400).send({
+      error: err.message,
+    });
+  }
+});
+
+// Add a new user to an event.
+app.post('/:eventUrl/new_user', async (req, res) => {
+  try {
+    // Parse the request.
+    const { eventUrl } = req.params;
+    const { username, password, scheduleInMs }: {
+      username: string, password: string,
+      scheduleInMs: { start: number, end: number }[]
+    } = req.body;
+    if (scheduleInMs == null || scheduleInMs.length === 0) {
+      throw new Error('scheduleInMs cannot be empty');
+    }
+    const passwordHash = await generatePasswordHash(password);
+    // Handle database logic.
+    await insertNewUser(
+        eventUrl, username, passwordHash, scheduleInMs);
+    // Return a response.
+    // await login(session, res, eventId, eventUrl, username);
+    res.send('ok');
   } catch (err) {
     res.status(400).send({
       error: err.message,

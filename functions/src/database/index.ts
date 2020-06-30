@@ -63,3 +63,28 @@ async function getQueryDoc(eventUrl: string) {
   }
   return queryDocs[0];
 }
+
+export enum UserType {
+  ADMIN,
+  DEFAULT,
+};
+
+/**
+ * Add a new user to an event.
+ * @param eventUrl The url identifier of the event.
+ * @param username The username of the new user.
+ * @param passwordHash The password hash of the new user.
+ * @param scheduleInMs The intervals in which the user is available.
+ * @param userType The type of user account.
+ */
+export async function insertNewUser(
+    eventUrl: string, username: string, passwordHash: string,
+    scheduleInMs: { start: number, end: number }[],
+    userType = UserType.DEFAULT) {
+  const queryDoc = await getQueryDoc(eventUrl);
+  await queryDoc.ref.collection('user').doc(username).set({
+    passwordHash,
+    scheduleInMs,
+    isAdmin: userType === UserType.ADMIN,
+  });
+}
