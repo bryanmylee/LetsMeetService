@@ -1,3 +1,4 @@
+import * as functions from 'firebase-functions';
 import { Response, Request } from 'express';
 import bcrypt from 'bcryptjs';
 
@@ -7,6 +8,7 @@ import {
   createRefreshToken,
   setRefreshTokenCookie
 } from './tokens';
+import UserType from './types/UserType';
 
 /**
  * Generate a password hash.
@@ -14,7 +16,8 @@ import {
  * @returns A promise that resolves with the generated hash.
  */
 export async function generatePasswordHash(password: string) {
-  const saltLength = parseInt(process.env.PASSWORD_SALT_LENGTH ?? '12', 10);
+  const saltLength
+      = parseInt(functions.config().api.password_salt_length ?? '12', 10);
   return await bcrypt.hash(password, saltLength);
 }
 
@@ -45,17 +48,16 @@ export function getAuthorizationPayload(req: Request) {
 /**
  * Log in a user and persist the session in the database. Then, send a response
  * containing the access token and additional metadata.
- * @param session The current database session.
  * @param res The HTTP/S response to set cookies on and send back.
- * @param eventId The internal identifier of the event.
  * @param eventUrl The url identifier of the event.
  * @param username The username of the user logging in.
+ * @param userType The type of the user.
  */
 export async function login(
-    session: any, res: Response, eventId: number,
-    eventUrl: string, username: string, isAdmin: boolean = false) {
-  const accessToken = createAccessToken(eventUrl, username, isAdmin);
-  const refreshToken = createRefreshToken(eventUrl, username, isAdmin);
+    res: Response, eventUrl: string,
+    username: string, userType: UserType = UserType.DEFAULT) {
+  const accessToken = createAccessToken(eventUrl, username, userType);
+  const refreshToken = createRefreshToken(eventUrl, username, userType);
 
   // await database.setRefreshToken(session, eventId, username, refreshToken);
 
@@ -63,6 +65,5 @@ export async function login(
   res.send({
     eventUrl,
     accessToken,
-    accessTokenLifetime: process.env.ACCESS_TOKEN_EXPIRY ?? '15m',
   });
 }
