@@ -60,7 +60,6 @@ export async function login(
   const refreshToken = createRefreshToken(eventUrl, username, userType);
 
   // Store the refresh token in the database.
-  // await database.setRefreshToken(session, eventId, username, refreshToken);
   await storeRefreshToken(eventUrl, username, refreshToken);
 
   storeRefreshTokenOnClient(res, refreshToken, eventUrl);
