@@ -6,3 +6,6 @@
 typings/
 
 node_modules/
+
+# Local config files
+.runtimeconfig.json
