@@ -1,6 +1,5 @@
 import * as functions from 'firebase-functions';
 import jwt from 'jsonwebtoken';
-import { Response } from 'express';
 import UserType from './types/UserType';
 
 /**
@@ -75,18 +74,4 @@ export function getRefreshTokenPayload(token: string) {
     username: payload.uid,
     isAdmin: payload.adm,
   };
-}
-
-/**
- * Store a refresh token as a protected cookie on the client.
- * @param res The response to send to the client.
- * @param refreshToken The refresh JWT.
- * @param eventUrl The url identifier of the event this token is for.
- */
-export function setRefreshTokenCookie(
-    res: Response, refreshToken: string, eventUrl: string) {
-  res.cookie('refreshToken', refreshToken, {
-    httpOnly: true,
-    path: `/${eventUrl}/refresh_token`,
-  });
 }

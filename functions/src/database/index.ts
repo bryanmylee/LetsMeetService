@@ -78,9 +78,21 @@ export async function insertNewUser(
     scheduleInMs: { start: number, end: number }[],
     userType = UserType.DEFAULT) {
   const queryDoc = await getQueryDoc(eventUrl);
-  await queryDoc.ref.collection('user').doc(username).set({
-    passwordHash,
-    scheduleInMs,
-    isAdmin: userType === UserType.ADMIN,
-  });
+  await queryDoc.ref
+      .collection('user')
+      .doc(username)
+      .set({
+        passwordHash,
+        scheduleInMs,
+        isAdmin: userType === UserType.ADMIN,
+      });
+}
+
+export async function storeRefreshToken(
+    eventUrl: string, username: string, refreshToken: string) {
+  const queryDoc = await getQueryDoc(eventUrl);
+  await queryDoc.ref
+      .collection('user')
+      .doc(username)
+      .set({ refreshToken }, { merge: true });
 }

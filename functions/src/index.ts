@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions';
 import express from 'express';
 
-import { generatePasswordHash } from './authorization';
+import { generatePasswordHash, login } from './authorization';
 import { createNewEvent, getEvent, insertNewUser } from './database';
 import { applyMiddlewares } from './middlewares';
 
@@ -45,11 +45,14 @@ app.post('/:eventUrl/new_user', async (req, res) => {
     }
     const passwordHash = await generatePasswordHash(password);
     // Handle database logic.
-    await insertNewUser(
-        eventUrl, username, passwordHash, scheduleInMs);
+    await insertNewUser(eventUrl, username, passwordHash, scheduleInMs);
+    // Generate and store tokens.
+    const accessToken = await login(res, eventUrl, username);
     // Return a response.
-    // await login(session, res, eventId, eventUrl, username);
-    res.send('ok');
+    res.send({
+      eventUrl,
+      accessToken,
+    });
   } catch (err) {
     res.status(400).send({
       error: err.message,

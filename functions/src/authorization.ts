@@ -6,8 +6,8 @@ import {
   getAccessTokenPayload,
   createAccessToken,
   createRefreshToken,
-  setRefreshTokenCookie
 } from './tokens';
+import { storeRefreshToken } from './database';
 import UserType from './types/UserType';
 
 /**
@@ -46,12 +46,12 @@ export function getAuthorizationPayload(req: Request) {
 }
 
 /**
- * Log in a user and persist the session in the database. Then, send a response
- * containing the access token and additional metadata.
+ * Log in a user and persist the session in the database.
  * @param res The HTTP/S response to set cookies on and send back.
  * @param eventUrl The url identifier of the event.
  * @param username The username of the user logging in.
  * @param userType The type of the user.
+ * @returns The access token generated from the login.
  */
 export async function login(
     res: Response, eventUrl: string,
@@ -59,11 +59,24 @@ export async function login(
   const accessToken = createAccessToken(eventUrl, username, userType);
   const refreshToken = createRefreshToken(eventUrl, username, userType);
 
+  // Store the refresh token in the database.
   // await database.setRefreshToken(session, eventId, username, refreshToken);
+  await storeRefreshToken(eventUrl, username, refreshToken);
 
-  setRefreshTokenCookie(res, refreshToken, eventUrl);
-  res.send({
-    eventUrl,
-    accessToken,
+  storeRefreshTokenOnClient(res, refreshToken, eventUrl);
+  return accessToken;
+}
+
+/**
+ * Set the refresh token on the client with a HTTP only cookie.
+ * @param res The response to send to the client.
+ * @param refreshToken The refresh JWT.
+ * @param eventUrl The url identifier of the event this token is for.
+ */
+export function storeRefreshTokenOnClient(
+    res: Response, refreshToken: string, eventUrl: string) {
+  res.cookie('refreshToken', refreshToken, {
+    httpOnly: true,
+    path: `/${eventUrl}/refresh_token`,
   });
 }
