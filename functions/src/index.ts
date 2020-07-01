@@ -4,6 +4,7 @@ import express from 'express';
 import { generatePasswordHash, login } from './authorization';
 import { createNewEvent, getEvent, insertNewUser } from './database';
 import { applyMiddlewares } from './middlewares';
+import UserType from './types/UserType';
 
 const app = express();
 applyMiddlewares(app);
@@ -22,8 +23,10 @@ app.post('/new', async (req, res) => {
     // Handle database logic
     const { eventUrl } = await createNewEvent(
         title, description, username, scheduleInMs);
+    // Generate and store tokens.
+    const accessToken = await login(res, eventUrl, username, UserType.ADMIN);
     // Return a response
-    res.send({ eventUrl });
+    res.send({ eventUrl, accessToken });
   } catch (err) {
     res.status(400).send({
       error: err.message,
@@ -49,10 +52,7 @@ app.post('/:eventUrl/new_user', async (req, res) => {
     // Generate and store tokens.
     const accessToken = await login(res, eventUrl, username);
     // Return a response.
-    res.send({
-      eventUrl,
-      accessToken,
-    });
+    res.send({ eventUrl, accessToken });
   } catch (err) {
     res.status(400).send({
       error: err.message,
