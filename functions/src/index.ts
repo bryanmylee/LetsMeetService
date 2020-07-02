@@ -6,6 +6,7 @@ import {
   comparePasswordHash,
   generateAndPersistTokens,
   setRefreshTokenCookie,
+  clearRefreshTokenCookie,
 } from './authorization';
 import {
   createNewEvent,
@@ -109,7 +110,7 @@ app.post('/:eventUrl/login', async (req, res) => {
 app.post('/:eventUrl/logout', async (req, res) => {
   // Parse the request.
   const { eventUrl } = req.params;
-  res.clearCookie('__session', { path: `/${eventUrl}/refresh_token` });
+  clearRefreshTokenCookie(req, res, eventUrl);
   // Return a response.
   res.send({
     message: 'Logged out',

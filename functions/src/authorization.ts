@@ -64,25 +64,47 @@ export async function generateAndPersistTokens(
 }
 
 /**
- * Set the refresh token on the client with a HTTP only cookie. The request is
- * required to determine the current path of the api endpoint. This allows us to
- * dynamically update the path of the endpoint, such that the path of the cookie
- * matches the refresh endpoint.
- * @param req The request send from the client.
+ * Set the refresh token on the client with a HTTP only cookie.
+ * @param req The request sent from the client.
  * @param res The response to send to the client.
  * @param eventUrl The url identifier of the event this token is for.
  * @param refreshToken The refresh JWT.
  */
 export function setRefreshTokenCookie(
     req: Request, res: Response, eventUrl: string, refreshToken: string) {
+  res.cookie('__session', refreshToken, {
+    httpOnly: true,
+    path: `${getBasePath(req, eventUrl)}/refresh_token`,
+  });
+}
+
+/**
+ * Clear the refresh token cookie for an event.
+ * @param req The request sent from the client.
+ * @param res The response to send to the client.
+ * @param eventUrl The url identifier of the event this token is for.
+ */
+export function clearRefreshTokenCookie(
+    req: Request, res: Response, eventUrl: string) {
+  res.clearCookie('__session', {
+    path: `${getBasePath(req, eventUrl)}/refresh_token`,
+  });
+}
+
+/**
+ * Get the base path of the current API endpoint. The request is required to
+ * determine the current path of the api endpoint. This allows us to dynamically
+ * update the path of the endpoint, such that the path of the cookie matches the
+ * refresh endpoint.
+ * @param req The request sent from the client.
+ * @param eventUrl The url identifier of the event this token is for.
+ * @returns The base path, ending with the eventUrl.
+ */
+function getBasePath(req: Request, eventUrl: string) {
   // Since eventUrl is consistently at the end of the path, we can use that to
   // find the current path.
   const tokens = req.originalUrl.split(eventUrl);
   // Use the second last token, as it is possible to have an endpoint path that
   // could contain the eventUrl. We want the last instance of eventUrl.
-  const basePath = tokens[tokens.length - 2] + eventUrl;
-  res.cookie('__session', refreshToken, {
-    httpOnly: true,
-    path: `${basePath}/refresh_token`,
-  });
+  return tokens[tokens.length - 2] + eventUrl;
 }
