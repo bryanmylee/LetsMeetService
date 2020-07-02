@@ -112,6 +112,20 @@ export async function insertNewUser(
 }
 
 /**
+ * Update schedule information of a user.
+ * @param eventUrl The url identifier of the event.
+ * @param username The username of the user.
+ * @param scheduleInMs The new schedule information of the user.
+ */
+export async function updateUserIntervals(
+    eventUrl: string, username: string,
+    newScheduleInMs: { start: number, end: number }[]) {
+  const queryDoc = await getQueryDoc(eventUrl);
+  const userRef = queryDoc.ref.collection('user').doc(username);
+  await userRef.set({ scheduleInMs: newScheduleInMs }, { merge: true })
+}
+
+/**
  * Get the credentials of a user.
  * @param eventUrl The url identifier of the event to which the user belongs.
  * @param username The username of the user to find credentials of.

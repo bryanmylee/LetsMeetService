@@ -4,6 +4,7 @@ import express from 'express';
 import {
   generatePasswordHash,
   comparePasswordHash,
+  getAuthorizationPayload,
   generateAndPersistTokens,
   setRefreshTokenCookie,
   clearRefreshTokenCookie,
@@ -12,6 +13,7 @@ import {
   createNewEvent,
   getEvent,
   insertNewUser,
+  updateUserIntervals,
   getUserCredentials,
   getRefreshToken,
 } from './database';
@@ -143,6 +145,35 @@ app.post('/:eventUrl/refresh_token', async (req, res) => {
     res.status(400).send({
       error: err.message,
     })
+  }
+});
+
+// Edit a user schedule.
+app.post('/:eventUrl/:username/edit', async (req, res) => {
+  try {
+    // Parse the request.
+    const { eventUrl, username } = req.params;
+    const payload = getAuthorizationPayload(req);
+    const { newScheduleInMs }: {
+      newScheduleInMs: { start: number, end: number }[]
+    } = req.body;
+    if (newScheduleInMs == null || newScheduleInMs.length === 0) {
+      throw new Error('newScheduleInMs cannot be empty');
+    }
+    // Verify the request.
+    if (payload.eventUrl !== eventUrl || payload.username !== username) {
+      throw new Error('Not authorized');
+    }
+    // Handle database logic.
+    await updateUserIntervals(eventUrl, username, newScheduleInMs);
+    // Return a response.
+    res.send({
+      message: 'Updated schedule',
+    });
+  } catch (err) {
+    res.status(400).send({
+      error: err.message,
+    });
   }
 });
 
