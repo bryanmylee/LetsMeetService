@@ -1,8 +1,13 @@
 import * as functions from 'firebase-functions';
 import express from 'express';
 
-import { generatePasswordHash, login } from './authorization';
-import { createNewEvent, getEvent, insertNewUser } from './database';
+import { generatePasswordHash, comparePasswordHash, login } from './authorization';
+import {
+  createNewEvent,
+  getEvent,
+  insertNewUser,
+  getUserCredentials
+} from './database';
 import { applyMiddlewares } from './middlewares';
 import UserType from './types/UserType';
 
@@ -55,6 +60,29 @@ app.post('/:eventUrl/new_user', async (req, res) => {
     const accessToken = await login(res, eventUrl, username);
     // Return a response.
     res.send({ eventUrl, accessToken });
+  } catch (err) {
+    res.status(400).send({
+      error: err.message,
+    });
+  }
+});
+
+// Log a user into an event.
+app.post('/:eventUrl/login', async (req, res) => {
+  try {
+    // Parse the request.
+    const { eventUrl } = req.params;
+    const { username, password }: {
+      username: string, password: string,
+    } = req.body;
+    // Handle database logic.
+    const { passwordHash, isAdmin } = await getUserCredentials(eventUrl, username);
+    // Verify the request.
+    const valid = await comparePasswordHash(password, passwordHash);
+    if (!valid) throw new Error('Password invalid');
+    // Return a response.
+    const accessToken = await login(res, eventUrl, username, isAdmin ? UserType.ADMIN : UserType.DEFAULT);
+    res.send({ accessToken });
   } catch (err) {
     res.status(400).send({
       error: err.message,

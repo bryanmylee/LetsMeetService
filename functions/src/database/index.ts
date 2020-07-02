@@ -112,6 +112,32 @@ export async function insertNewUser(
 }
 
 /**
+ * Get the credentials of a user.
+ * @param eventUrl The url identifier of the event to which the user belongs.
+ * @param username The username of the user to find credentials of.
+ * @returns A promise that resolves to an object containing the password hash of
+ * the user account and admin status. If the user does not exist, return a
+ * promise that resolves to null.
+ */
+export async function getUserCredentials(eventUrl: string, username: string) {
+  const queryDoc = await getQueryDoc(eventUrl);
+  const userRef = queryDoc.ref.collection('user').doc(username);
+  const snapshot = await userRef.get();
+  const user = snapshot.data() as {
+    isAdmin: boolean,
+    passwordHash: string,
+    refreshToken: string,
+  };
+  if (user == null) {
+    throw new Error('User not found');
+  }
+  return ({
+    passwordHash: user.passwordHash,
+    isAdmin: user.isAdmin,
+  });
+}
+
+/**
  * Store a user's refresh token to allow verification of refresh tokens.
  * @param eventUrl The url identifier of the event.
  * @param username The username to store the refresh token of.
