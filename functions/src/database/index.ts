@@ -116,8 +116,8 @@ export async function insertNewUser(
  * @param eventUrl The url identifier of the event to which the user belongs.
  * @param username The username of the user to find credentials of.
  * @returns A promise that resolves to an object containing the password hash of
- * the user account and admin status. If the user does not exist, return a
- * promise that resolves to null.
+ * the user account and admin status.
+ * @throws An error if the user does not exist.
  */
 export async function getUserCredentials(eventUrl: string, username: string) {
   const queryDoc = await getQueryDoc(eventUrl);

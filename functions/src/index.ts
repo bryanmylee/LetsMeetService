@@ -90,6 +90,17 @@ app.post('/:eventUrl/login', async (req, res) => {
   }
 });
 
+// Log a user out of an event.
+app.post('/:eventUrl/logout', async (req, res) => {
+  // Parse the request.
+  const { eventUrl } = req.params;
+  res.clearCookie('refreshToken', { path: `/${eventUrl}/refresh_token` });
+  // Return a response.
+  res.send({
+    message: 'Logged out',
+  });
+});
+
 // Get event details
 app.get('/:eventUrl', async (req, res) => {
   try {
