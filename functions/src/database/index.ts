@@ -111,6 +111,12 @@ export async function insertNewUser(
   });
 }
 
+/**
+ * Store a user's refresh token to allow verification of refresh tokens.
+ * @param eventUrl The url identifier of the event.
+ * @param username The username to store the refresh token of.
+ * @param refreshToken The refresh token to store.
+ */
 export async function storeRefreshToken(
     eventUrl: string, username: string, refreshToken: string) {
   const queryDoc = await getQueryDoc(eventUrl);
