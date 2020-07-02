@@ -92,14 +92,15 @@ export async function insertNewUser(
     scheduleInMs: { start: number, end: number }[],
     userType = UserType.DEFAULT) {
   const queryDoc = await getQueryDoc(eventUrl);
-  await queryDoc.ref
-      .collection('user')
-      .doc(username)
-      .set({
-        passwordHash,
-        scheduleInMs,
-        isAdmin: userType === UserType.ADMIN,
-      });
+  const userRef = queryDoc.ref.collection('user').doc(username);
+  if ((await userRef.get()).exists) {
+    throw new Error('Username already taken');
+  }
+  await userRef.set({
+    passwordHash,
+    scheduleInMs,
+    isAdmin: userType === UserType.ADMIN,
+  });
 }
 
 export async function storeRefreshToken(
