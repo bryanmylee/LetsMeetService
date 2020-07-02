@@ -6,8 +6,10 @@ import {
   createNewEvent,
   getEvent,
   insertNewUser,
-  getUserCredentials
+  getUserCredentials,
+  getRefreshToken,
 } from './database';
+import { getRefreshTokenPayload } from './tokens';
 import { applyMiddlewares } from './middlewares';
 import UserType from './types/UserType';
 
@@ -99,6 +101,32 @@ app.post('/:eventUrl/logout', async (req, res) => {
   res.send({
     message: 'Logged out',
   });
+});
+
+// Issue new access tokens.
+app.post('/:eventUrl/refresh_token', async (req, res) => {
+  try {
+    // Parse the request.
+    const { eventUrl } = req.params;
+    const { refreshToken }: { refreshToken: string } = req.cookies;
+    // Verify the request.
+    if (refreshToken == null) throw new Error('Refresh token not found');
+    // Verify that the token is not tampered with, and retrieve the payload.
+    const { username, isAdmin } = getRefreshTokenPayload(refreshToken);
+    // Handle database logic.
+    const storedRefreshToken = await getRefreshToken(eventUrl, username);
+    if (storedRefreshToken == null) throw new Error('User invalid');
+    if (storedRefreshToken !== refreshToken) {
+      throw new Error('Refresh token invalid');
+    }
+    // Return a response.
+    const accessToken = login(res, eventUrl, username, isAdmin ? UserType.ADMIN : UserType.DEFAULT);
+    res.send({ accessToken });
+  } catch (err) {
+    res.status(400).send({
+      error: err.message,
+    })
+  }
 });
 
 // Get event details

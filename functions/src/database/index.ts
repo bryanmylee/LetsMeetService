@@ -138,6 +138,28 @@ export async function getUserCredentials(eventUrl: string, username: string) {
 }
 
 /**
+ * Get the refresh token of a user stored in database.
+ * @param eventUrl The url identifier of the event to which the user belongs.
+ * @param username The username of the user.
+ * @returns A promise that resolves to the refresh token of the user.
+ * @throws An error if the user does not exist.
+ */
+export async function getRefreshToken(eventUrl: string, username: string) {
+  const queryDoc = await getQueryDoc(eventUrl);
+  const userRef = queryDoc.ref.collection('user').doc(username);
+  const snapshot = await userRef.get();
+  const user = snapshot.data() as {
+    isAdmin: boolean,
+    passwordHash: string,
+    refreshToken: string,
+  };
+  if (user == null) {
+    throw new Error('User not found');
+  }
+  return user.refreshToken;
+}
+
+/**
  * Store a user's refresh token to allow verification of refresh tokens.
  * @param eventUrl The url identifier of the event.
  * @param username The username to store the refresh token of.
