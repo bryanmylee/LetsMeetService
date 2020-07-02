@@ -1,7 +1,12 @@
 import * as functions from 'firebase-functions';
 import express from 'express';
 
-import { generatePasswordHash, comparePasswordHash, login } from './authorization';
+import {
+  generatePasswordHash,
+  comparePasswordHash,
+  generateAndPersistTokens,
+  setRefreshTokenCookie,
+} from './authorization';
 import {
   createNewEvent,
   getEvent,
@@ -33,7 +38,9 @@ app.post('/new', async (req, res) => {
     const { eventUrl } = await createNewEvent(
         title, description, username, passwordHash, scheduleInMs);
     // Generate and store tokens.
-    const accessToken = await login(res, eventUrl, username, UserType.ADMIN);
+    const { accessToken, refreshToken }
+        = await generateAndPersistTokens(eventUrl, username, UserType.ADMIN);
+    setRefreshTokenCookie(req, res, eventUrl, refreshToken);
     // Return a response
     res.send({ eventUrl, accessToken });
   } catch (err) {
@@ -59,7 +66,9 @@ app.post('/:eventUrl/new_user', async (req, res) => {
     // Handle database logic.
     await insertNewUser(eventUrl, username, passwordHash, scheduleInMs);
     // Generate and store tokens.
-    const accessToken = await login(res, eventUrl, username);
+    const { accessToken, refreshToken }
+        = await generateAndPersistTokens(eventUrl, username);
+    setRefreshTokenCookie(req, res, eventUrl, refreshToken);
     // Return a response.
     res.send({ eventUrl, accessToken });
   } catch (err) {
@@ -78,12 +87,16 @@ app.post('/:eventUrl/login', async (req, res) => {
       username: string, password: string,
     } = req.body;
     // Handle database logic.
-    const { passwordHash, isAdmin } = await getUserCredentials(eventUrl, username);
+    const { passwordHash, isAdmin }
+        = await getUserCredentials(eventUrl, username);
     // Verify the request.
     const valid = await comparePasswordHash(password, passwordHash);
     if (!valid) throw new Error('Password invalid');
     // Return a response.
-    const accessToken = await login(res, eventUrl, username, isAdmin ? UserType.ADMIN : UserType.DEFAULT);
+    const userType = isAdmin ? UserType.ADMIN : UserType.DEFAULT;
+    const { accessToken, refreshToken }
+        = await generateAndPersistTokens(eventUrl, username, userType);
+    setRefreshTokenCookie(req, res, eventUrl, refreshToken);
     res.send({ accessToken });
   } catch (err) {
     res.status(400).send({
@@ -96,7 +109,7 @@ app.post('/:eventUrl/login', async (req, res) => {
 app.post('/:eventUrl/logout', async (req, res) => {
   // Parse the request.
   const { eventUrl } = req.params;
-  res.clearCookie('refreshToken', { path: `/${eventUrl}/refresh_token` });
+  res.clearCookie('__session', { path: `/${eventUrl}/refresh_token` });
   // Return a response.
   res.send({
     message: 'Logged out',
@@ -108,7 +121,7 @@ app.post('/:eventUrl/refresh_token', async (req, res) => {
   try {
     // Parse the request.
     const { eventUrl } = req.params;
-    const { refreshToken }: { refreshToken: string } = req.cookies;
+    const { __session: refreshToken }: { __session: string } = req.cookies;
     // Verify the request.
     if (refreshToken == null) throw new Error('Refresh token not found');
     // Verify that the token is not tampered with, and retrieve the payload.
@@ -120,7 +133,10 @@ app.post('/:eventUrl/refresh_token', async (req, res) => {
       throw new Error('Refresh token invalid');
     }
     // Return a response.
-    const accessToken = login(res, eventUrl, username, isAdmin ? UserType.ADMIN : UserType.DEFAULT);
+    const userType = isAdmin ? UserType.ADMIN : UserType.DEFAULT;
+    const { accessToken, refreshToken: newRefreshToken }
+        = await generateAndPersistTokens(eventUrl, username, userType);
+    setRefreshTokenCookie(req, res, eventUrl, newRefreshToken);
     res.send({ accessToken });
   } catch (err) {
     res.status(400).send({
