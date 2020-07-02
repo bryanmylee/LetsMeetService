@@ -13,16 +13,18 @@ applyMiddlewares(app);
 app.post('/new', async (req, res) => {
   try {
     // Parse the request
-    const { username, title, description, scheduleInMs }: {
-      username: string, title: string, description: string,
+    const { username, password, title, description, scheduleInMs }: {
+      username: string, password: string,
+      title: string, description: string,
       scheduleInMs: { start: number, end: number }[]
     } = req.body;
     if (scheduleInMs == null || scheduleInMs.length === 0) {
       throw new Error('scheduleInMs cannot be empty');
     }
+    const passwordHash = await generatePasswordHash(password);
     // Handle database logic
     const { eventUrl } = await createNewEvent(
-        title, description, username, scheduleInMs);
+        title, description, username, passwordHash, scheduleInMs);
     // Generate and store tokens.
     const accessToken = await login(res, eventUrl, username, UserType.ADMIN);
     // Return a response

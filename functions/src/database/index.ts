@@ -23,17 +23,25 @@ export const db = admin.firestore();
  */
 export async function createNewEvent(
     title: string, description: string,
-    username: string, scheduleInMs: { start: number, end: number }[]) {
-  const ref = db.collection('event').doc();
-  const { id: newId } = ref;
+    username: string, passwordHash: string,
+    scheduleInMs: { start: number, end: number }[]) {
+  const batch = db.batch();
+  const eventRef = db.collection('event').doc();
+  const { id: newId } = eventRef;
   const eventUrl = generateId(newId, 2);
-  await ref.set({
+  batch.set(eventRef, {
     eventUrl,
     title,
     description,
     admin: username,
     scheduleInMs,
   });
+  const userRef = eventRef.collection('user').doc(username);
+  batch.set(userRef, {
+    passwordHash,
+    isAdmin: true,
+  });
+  await batch.commit();
   return { newId, eventUrl };
 }
 
