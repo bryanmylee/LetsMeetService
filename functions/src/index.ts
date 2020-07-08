@@ -18,14 +18,14 @@ import {
   getRefreshToken,
 } from './database';
 import { getRefreshTokenPayload } from './tokens';
-import { applyMiddlewares } from './middlewares';
+import { applyPreMiddlewares, applyPostMiddlewares } from './middlewares';
 import UserType from './types/UserType';
 
 const app = express();
-applyMiddlewares(app);
+applyPreMiddlewares(app);
 
 // Create a new event.
-app.post('/new', async (req, res) => {
+app.post('/new', async (req, res, next) => {
   try {
     // Parse the request
     const { username, password, title, description, scheduleInMs }: {
@@ -47,14 +47,12 @@ app.post('/new', async (req, res) => {
     // Return a response
     res.send({ eventUrl, accessToken });
   } catch (err) {
-    res.status(400).send({
-      error: err.message,
-    });
+    next(err);
   }
 });
 
 // Add a new user to an event.
-app.post('/:eventUrl/new_user', async (req, res) => {
+app.post('/:eventUrl/new_user', async (req, res, next) => {
   try {
     // Parse the request.
     const { eventUrl } = req.params;
@@ -75,14 +73,12 @@ app.post('/:eventUrl/new_user', async (req, res) => {
     // Return a response.
     res.send({ eventUrl, accessToken });
   } catch (err) {
-    res.status(400).send({
-      error: err.message,
-    });
+    next(err);
   }
 });
 
 // Log a user into an event.
-app.post('/:eventUrl/login', async (req, res) => {
+app.post('/:eventUrl/login', async (req, res, next) => {
   try {
     // Parse the request.
     const { eventUrl } = req.params;
@@ -102,9 +98,7 @@ app.post('/:eventUrl/login', async (req, res) => {
     setRefreshTokenCookie(req, res, eventUrl, refreshToken);
     res.send({ accessToken });
   } catch (err) {
-    res.status(400).send({
-      error: err.message,
-    });
+    next(err);
   }
 });
 
@@ -120,7 +114,7 @@ app.post('/:eventUrl/logout', async (req, res) => {
 });
 
 // Issue new access tokens.
-app.post('/:eventUrl/refresh_token', async (req, res) => {
+app.post('/:eventUrl/refresh_token', async (req, res, next) => {
   try {
     // Parse the request.
     const { eventUrl } = req.params;
@@ -142,14 +136,12 @@ app.post('/:eventUrl/refresh_token', async (req, res) => {
     setRefreshTokenCookie(req, res, eventUrl, newRefreshToken);
     res.send({ accessToken });
   } catch (err) {
-    res.status(400).send({
-      error: err.message,
-    })
+    next(err);
   }
 });
 
 // Edit a user schedule.
-app.post('/:eventUrl/:username/edit', async (req, res) => {
+app.post('/:eventUrl/:username/edit', async (req, res, next) => {
   try {
     // Parse the request.
     const { eventUrl, username } = req.params;
@@ -171,14 +163,12 @@ app.post('/:eventUrl/:username/edit', async (req, res) => {
       message: 'Updated schedule',
     });
   } catch (err) {
-    res.status(400).send({
-      error: err.message,
-    });
+    next(err);
   }
 });
 
 // Get event details
-app.get('/:eventUrl', async (req, res) => {
+app.get('/:eventUrl', async (req, res, next) => {
   try {
     // Parse the request
     const { eventUrl } = req.params;
@@ -187,10 +177,10 @@ app.get('/:eventUrl', async (req, res) => {
     // Return a response
     res.send(event);
   } catch (err) {
-    res.status(400).send({
-      error: err.message,
-    });
+    next(err);
   }
 });
+
+applyPostMiddlewares(app);
 
 export const api = functions.https.onRequest(app);
