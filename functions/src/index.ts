@@ -28,24 +28,17 @@ applyPreMiddlewares(app);
 app.post('/new', async (req, res, next) => {
   try {
     // Parse the request
-    const { username, password, title, description, scheduleInMs }: {
-      username: string, password: string,
+    const { title, description, scheduleInMs }: {
       title: string, description: string,
       scheduleInMs: { start: number, end: number }[]
     } = req.body;
     if (scheduleInMs == null || scheduleInMs.length === 0) {
       throw new Error('scheduleInMs cannot be empty');
     }
-    const passwordHash = await generatePasswordHash(password);
     // Handle database logic
-    const { eventUrl } = await createNewEvent(
-        title, description, username, passwordHash, scheduleInMs);
-    // Generate and store tokens.
-    const { accessToken, refreshToken }
-        = await generateAndPersistTokens(eventUrl, username, UserType.ADMIN);
-    setRefreshTokenCookie(req, res, eventUrl, refreshToken);
+    const { eventUrl } = await createNewEvent(title, description, scheduleInMs);
     // Return a response
-    res.send({ eventUrl, accessToken });
+    res.send({ eventUrl });
   } catch (err) {
     next(err);
   }
