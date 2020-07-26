@@ -13,8 +13,7 @@ export const db = admin.firestore();
  * Insert a new event into the database.
  * @param title The title of the event.
  * @param description The description of the event.
- * @param username The username of the person creating the event.
- * @param passwordHash The password hash of the person creating the event.
+ * @param color: The color hex of the event.
  * @param scheduleInMs The intervals in which the event is available. By
  * default, the person creating the event will have the same intervals as the
  * event itself.
@@ -22,7 +21,7 @@ export const db = admin.firestore();
  * identifier and new url idenfifier.
  */
 export async function createNewEvent(
-    title: string, description: string,
+    title: string, description: string, color: string,
     scheduleInMs: { start: number, end: number }[]) {
   const eventRef = db.collection('event').doc();
   const { id: newId } = eventRef;
@@ -31,6 +30,7 @@ export async function createNewEvent(
     eventUrl,
     title,
     description,
+    color,
     scheduleInMs,
   });
   return { newId, eventUrl };
@@ -47,6 +47,7 @@ export async function getEvent(eventUrl: string) {
     title: string,
     eventUrl: string,
     description: string,
+    color: string,
     admin: string,
     scheduleInMs: { start: number, end: number }[]
   };

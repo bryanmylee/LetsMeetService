@@ -28,15 +28,15 @@ applyPreMiddlewares(app);
 app.post('/new', async (req, res, next) => {
   try {
     // Parse the request
-    const { title, description, scheduleInMs }: {
-      title: string, description: string,
+    const { title, description, color, scheduleInMs }: {
+      title: string, description: string, color: string,
       scheduleInMs: { start: number, end: number }[]
     } = req.body;
     if (scheduleInMs == null || scheduleInMs.length === 0) {
       throw new Error('scheduleInMs cannot be empty');
     }
     // Handle database logic
-    const { eventUrl } = await createNewEvent(title, description, scheduleInMs);
+    const { eventUrl } = await createNewEvent(title, description, color, scheduleInMs);
     // Return a response
     res.send({ eventUrl });
   } catch (err) {
