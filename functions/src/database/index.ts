@@ -1,5 +1,6 @@
 import * as admin from 'firebase-admin';
 import { generateId } from 'gfycat-ids';
+import dayjs from 'dayjs';
 import UserType from '../types/UserType';
 
 admin.initializeApp({
@@ -32,6 +33,7 @@ export async function createNewEvent(
     description,
     color,
     scheduleInMs,
+    createdOn: +dayjs(),
   });
   return { newId, eventUrl };
 }
