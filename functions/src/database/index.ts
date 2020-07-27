@@ -54,12 +54,12 @@ export async function getEvent(eventUrl: string) {
     scheduleInMs: { start: number, end: number }[]
   };
   const userQuerySnapshot = await queryDoc.ref.collection('user').get();
-  const userSchedulesInMs = userQuerySnapshot.docs.reduce((acc, doc) => {
-    return ({
-      ...acc,
-      [doc.id]: doc.data().scheduleInMs ?? [],
-    });
-  }, {}) as { [username: string]: { start: number, end: number }[] };
+  const userSchedulesInMs: {
+    [username: string]: { start: number, end: number }[]
+  } = {};
+  userQuerySnapshot.docs.forEach((doc) => {
+    userSchedulesInMs[doc.id] = doc.data().scheduleInMs ?? [];
+  })
   return { ...event, userSchedulesInMs };
 }
 
