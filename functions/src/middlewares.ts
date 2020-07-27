@@ -21,7 +21,7 @@ const errorHandler = (
     err: ResponseError, req: Request,
     res: Response, next: NextFunction
 ) => {
-  res.status(400).send({
+  res.send({
     error: err.message,
     stack: process.env.NODE_ENV === 'production' ? null : err.stack,
   });
