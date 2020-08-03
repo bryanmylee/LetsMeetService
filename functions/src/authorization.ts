@@ -4,10 +4,11 @@ import bcrypt from 'bcryptjs';
 
 import {
   getAccessTokenPayload,
+  getRefreshTokenPayload,
   createAccessToken,
   createRefreshToken,
 } from './tokens';
-import { storeRefreshToken } from './database';
+import { getRefreshToken, storeRefreshToken } from './database';
 import UserType from './types/UserType';
 
 /**
@@ -43,6 +44,36 @@ export function getAuthorizationPayload(req: Request) {
   // Auth header is in the format: 'Bearer {token}'
   const token = authorization.split(' ')[1];
   return getAccessTokenPayload(token);
+}
+
+/**
+ * Check for refresh tokens, generate access tokens, update the database, and set the response
+ * tokens in the response.
+ * @param req The HTTP/S request submitted.
+ * @param res The HTTP/S response to send.
+ * @returns A promise that resolves with the new access token.
+ */
+export async function getNewAccessToken(req: any, res: any) {
+    // Parse the request.
+    const { eventUrl } = req.params;
+    const { __session: refreshToken }: { __session: string } = req.cookies;
+    // Verify the request.
+    if (refreshToken == null) throw new Error('Refresh token not found');
+    // Verify that the token is not tampered with, and retrieve the payload.
+    const { username, isAdmin } = getRefreshTokenPayload(refreshToken);
+    // Handle database logic.
+    const storedRefreshToken = await getRefreshToken(eventUrl, username);
+    if (storedRefreshToken == null) throw new Error('User invalid');
+    if (storedRefreshToken !== refreshToken) {
+      throw new Error('Refresh token invalid');
+    }
+    // Return a response.
+    const userType = isAdmin ? UserType.ADMIN : UserType.DEFAULT;
+    const { accessToken, refreshToken: newRefreshToken }
+        = await generateAndPersistTokens(eventUrl, username, userType);
+    setRefreshTokenCookie(req, res, eventUrl, newRefreshToken);
+    return accessToken;
+    res.send({ accessToken });
 }
 
 /**

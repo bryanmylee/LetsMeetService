@@ -8,6 +8,7 @@ import {
   generateAndPersistTokens,
   setRefreshTokenCookie,
   clearRefreshTokenCookie,
+  getNewAccessToken,
 } from './authorization';
 import {
   createNewEvent,
@@ -15,9 +16,7 @@ import {
   insertNewUser,
   updateUserIntervals,
   getUserCredentials,
-  getRefreshToken,
 } from './database';
-import { getRefreshTokenPayload } from './tokens';
 import { applyPreMiddlewares, applyPostMiddlewares } from './middlewares';
 import UserType from './types/UserType';
 
@@ -109,24 +108,7 @@ app.post('/:eventUrl/logout', async (req, res) => {
 // Issue new access tokens.
 app.post('/:eventUrl/refresh_token', async (req, res, next) => {
   try {
-    // Parse the request.
-    const { eventUrl } = req.params;
-    const { __session: refreshToken }: { __session: string } = req.cookies;
-    // Verify the request.
-    if (refreshToken == null) throw new Error('Refresh token not found');
-    // Verify that the token is not tampered with, and retrieve the payload.
-    const { username, isAdmin } = getRefreshTokenPayload(refreshToken);
-    // Handle database logic.
-    const storedRefreshToken = await getRefreshToken(eventUrl, username);
-    if (storedRefreshToken == null) throw new Error('User invalid');
-    if (storedRefreshToken !== refreshToken) {
-      throw new Error('Refresh token invalid');
-    }
-    // Return a response.
-    const userType = isAdmin ? UserType.ADMIN : UserType.DEFAULT;
-    const { accessToken, refreshToken: newRefreshToken }
-        = await generateAndPersistTokens(eventUrl, username, userType);
-    setRefreshTokenCookie(req, res, eventUrl, newRefreshToken);
+    const accessToken = getNewAccessToken(req, res);
     res.send({ accessToken });
   } catch (err) {
     next(err);
@@ -167,8 +149,15 @@ app.get('/:eventUrl', async (req, res, next) => {
     const { eventUrl } = req.params;
     // Handle database logic
     const event = await getEvent(eventUrl);
+    let accessToken = null;
+    try {
+      accessToken = await getNewAccessToken(req, res);
+    } catch {}
     // Return a response
-    res.send(event);
+    res.send({
+      ...event,
+      accessToken,
+    });
   } catch (err) {
     next(err);
   }
