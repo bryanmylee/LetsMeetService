@@ -118,7 +118,7 @@ export function setRefreshTokenCookie(
 export function clearRefreshTokenCookie(
     req: Request, res: Response, eventUrl: string) {
   res.clearCookie('__session', {
-    path: `${getBasePath(req, eventUrl)}/refresh_token`,
+    path: `${getBasePath(req, eventUrl)}`,
   });
 }
 
