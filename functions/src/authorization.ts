@@ -105,7 +105,7 @@ export function setRefreshTokenCookie(
     req: Request, res: Response, eventUrl: string, refreshToken: string) {
   res.cookie('__session', refreshToken, {
     httpOnly: true,
-    path: `${getBasePath(req, eventUrl)}/refresh_token`,
+    path: `${getBasePath(req, eventUrl)}`,
   });
 }
 
