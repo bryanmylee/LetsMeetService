@@ -52,9 +52,6 @@ app.post('/:eventUrl/new_user', async (req, res, next) => {
       username: string, password: string,
       scheduleInMs: { start: number, end: number }[]
     } = req.body;
-    if (scheduleInMs == null || scheduleInMs.length === 0) {
-      throw new Error('scheduleInMs cannot be empty');
-    }
     const passwordHash = await generatePasswordHash(password);
     // Handle database logic.
     await insertNewUser(eventUrl, username, passwordHash, scheduleInMs);
@@ -124,9 +121,6 @@ app.post('/:eventUrl/:username/edit', async (req, res, next) => {
     const { newScheduleInMs }: {
       newScheduleInMs: { start: number, end: number }[]
     } = req.body;
-    if (newScheduleInMs == null || newScheduleInMs.length === 0) {
-      throw new Error('newScheduleInMs cannot be empty');
-    }
     // Verify the request.
     if (payload.eventUrl !== eventUrl || payload.username !== username) {
       throw new Error('Not authorized');

@@ -92,7 +92,7 @@ async function getQueryDoc(eventUrl: string) {
  */
 export async function insertNewUser(
     eventUrl: string, username: string, passwordHash: string,
-    scheduleInMs: { start: number, end: number }[],
+    scheduleInMs: { start: number, end: number }[] = [],
     userType = UserType.DEFAULT) {
   const queryDoc = await getQueryDoc(eventUrl);
   const userRef = queryDoc.ref.collection('user').doc(username);
@@ -114,7 +114,7 @@ export async function insertNewUser(
  */
 export async function updateUserIntervals(
     eventUrl: string, username: string,
-    newScheduleInMs: { start: number, end: number }[]) {
+    newScheduleInMs: { start: number, end: number }[] = []) {
   const queryDoc = await getQueryDoc(eventUrl);
   const userRef = queryDoc.ref.collection('user').doc(username);
   await userRef.set({ scheduleInMs: newScheduleInMs }, { merge: true })
