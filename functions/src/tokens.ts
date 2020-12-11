@@ -42,7 +42,7 @@ namespace Token {
    * @param token The token to decrypt.
    * @returns The decrypted payload of the access token.
    */
-  export function getAccessTokenPayload(token: string) {
+  export function getAccessTokenBody(token: string) {
     const payload = JwtBody.fromCoded(
         jwt.verify(token, functions.config().api.access_secret) as any);
     return payload.formatted();
@@ -66,7 +66,7 @@ namespace Token {
    * @param token The token to decrypt.
    * @returns The decrypted payload of the refresh token.
    */
-  export function getRefreshTokenPayload(token: string) {
+  export function getRefreshTokenBody(token: string) {
     const payload = JwtBody.fromCoded(
         jwt.verify(token, functions.config().api.refresh_secret) as any);
     return payload.formatted();

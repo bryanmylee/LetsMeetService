@@ -87,7 +87,7 @@ app.post('/:eventUrl/logout', async (req, res) => {
 // Issue new access tokens.
 app.post('/:eventUrl/refresh_token', async (req, res, next) => {
   try {
-    const accessToken = Auth.getNewAccessToken(req, res);
+    const accessToken = await Auth.refreshAccessToken(req, res);
     res.send({ accessToken });
   } catch (err) {
     next(err);
@@ -99,7 +99,7 @@ app.post('/:eventUrl/:username/edit', async (req, res, next) => {
   try {
     // Parse the request.
     const { eventUrl, username } = req.params;
-    const payload = Auth.getAuthorizationPayload(req);
+    const payload = Auth.getRequestAuthPayload(req);
     const { newScheduleInMs } = req.body as UserScheduleEdit;
     // Verify the request.
     if (payload.eventUrl !== eventUrl || payload.username !== username) {
@@ -125,7 +125,7 @@ app.get('/:eventUrl', async (req, res, next) => {
     const event = await Database.getEvent(eventUrl);
     let accessToken = null;
     try {
-      accessToken = await Auth.getNewAccessToken(req, res);
+      accessToken = await Auth.refreshAccessToken(req, res);
     } catch {}
     // Return a response
     res.send({

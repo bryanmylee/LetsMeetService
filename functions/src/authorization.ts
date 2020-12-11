@@ -32,24 +32,24 @@ namespace Auth {
    * @param req The HTTP/S request submitted.
    * @returns A promise that resolves with the authorization payload.
    */
-  export function getAuthorizationPayload(req: Request) {
+  export function getRequestAuthPayload(req: Request) {
     const { authorization } = req.headers;
     if (!authorization) {
-      throw new Error('Authentication not found.');
+      throw new Error('Authentication not found');
     }
     // Auth header is in the format: 'Bearer {token}'
     const token = authorization.split(' ')[1];
-    return Token.getAccessTokenPayload(token);
+    return Token.getAccessTokenBody(token);
   }
 
   /**
-   * Check for refresh tokens, generate access tokens, update the database, and set the response
-   * tokens in the response.
+   * If a refresh token exists, generate a new access token and persist a new
+   * refresh token in the database and on the client browser.
    * @param req The HTTP/S request submitted.
    * @param res The HTTP/S response to send.
    * @returns A promise that resolves with the new access token.
    */
-  export async function getNewAccessToken(req: any, res: any) {
+  export async function refreshAccessToken(req: any, res: any) {
       // Parse the request.
       const { eventUrl } = req.params;
       const refreshToken: string = req.cookies['__session'];
@@ -58,7 +58,7 @@ namespace Auth {
         throw new Error('Refresh token not found');
       }
       // Verify that the token is not tampered with, and retrieve the payload.
-      const { username } = Token.getRefreshTokenPayload(refreshToken);
+      const { username } = Token.getRefreshTokenBody(refreshToken);
       // Handle database logic.
       const storedRefreshToken = await Database.getRefreshToken(eventUrl, username);
       if (storedRefreshToken == null) {
