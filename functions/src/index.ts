@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions';
 import express from 'express';
 
-import Auth from './authorization';
+import Auth from './service/authorization';
 import Database from './database';
 import Event from './types/Event';
 import UserLogin from './types/UserLogin';

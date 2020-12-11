@@ -2,7 +2,7 @@ import * as functions from 'firebase-functions';
 import bcrypt from 'bcryptjs';
 import { Response, Request } from 'express';
 
-import Database from './database';
+import Database from '../database';
 import Token from './tokens';
 
 namespace Auth {
