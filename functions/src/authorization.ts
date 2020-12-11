@@ -73,7 +73,6 @@ export async function getNewAccessToken(req: any, res: any) {
         = await generateAndPersistTokens(eventUrl, username, userType);
     setRefreshTokenCookie(req, res, eventUrl, newRefreshToken);
     return accessToken;
-    res.send({ accessToken });
 }
 
 /**
