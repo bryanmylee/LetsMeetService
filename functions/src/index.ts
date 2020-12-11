@@ -4,9 +4,7 @@ import express from 'express';
 import * as auth from './service/authorization';
 import * as db from './database';
 import Event from './model/Event';
-import UserLogin from './model/UserLogin';
-import UserScheduleEdit from './model/UserScheduleEdit';
-import UserSignup from './model/UserSignup';
+import { UserSignup, UserLogin, UserScheduleEdit } from './model/RequestBody';
 import { applyPreMiddlewares, applyPostMiddlewares } from './middlewares';
 
 const app = express();
