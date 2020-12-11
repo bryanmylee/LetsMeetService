@@ -3,9 +3,12 @@ import express from 'express';
 
 import Auth from './authorization';
 import Database from './database';
-import { applyPreMiddlewares, applyPostMiddlewares } from './middlewares';
+import Event from './types/Event';
+import UserLogin from './types/UserLogin';
+import UserScheduleEdit from './types/UserScheduleEdit';
+import UserSignup from './types/UserSignup';
 import UserType from './types/UserType';
-import Interval from './types/Interval';
+import { applyPreMiddlewares, applyPostMiddlewares } from './middlewares';
 
 const app = express();
 applyPreMiddlewares(app);
@@ -14,10 +17,7 @@ applyPreMiddlewares(app);
 app.post('/new', async (req, res, next) => {
   try {
     // Parse the request
-    const { title, description, color, scheduleInMs }: {
-      title: string, description: string, color: string,
-      scheduleInMs: Interval[]
-    } = req.body;
+    const { title, description, color, scheduleInMs } = req.body as Event;
     if (scheduleInMs == null || scheduleInMs.length === 0) {
       throw new Error('scheduleInMs cannot be empty');
     }
@@ -35,10 +35,7 @@ app.post('/:eventUrl/new_user', async (req, res, next) => {
   try {
     // Parse the request.
     const { eventUrl } = req.params;
-    const { username, password, scheduleInMs }: {
-      username: string, password: string,
-      scheduleInMs: Interval[]
-    } = req.body;
+    const { username, password, scheduleInMs } = req.body as UserSignup;
     const passwordHash = await Auth.generatePasswordHash(password);
     // Handle database logic.
     await Database.insertNewUser(eventUrl, username, passwordHash, scheduleInMs);
@@ -58,9 +55,7 @@ app.post('/:eventUrl/login', async (req, res, next) => {
   try {
     // Parse the request.
     const { eventUrl } = req.params;
-    const { username, password }: {
-      username: string, password: string,
-    } = req.body;
+    const { username, password } = req.body as UserLogin;
     // Handle database logic.
     const { passwordHash, isAdmin }
         = await Database.getUserCredentials(eventUrl, username);
@@ -107,9 +102,7 @@ app.post('/:eventUrl/:username/edit', async (req, res, next) => {
     // Parse the request.
     const { eventUrl, username } = req.params;
     const payload = Auth.getAuthorizationPayload(req);
-    const { newScheduleInMs }: {
-      newScheduleInMs: Interval[]
-    } = req.body;
+    const { newScheduleInMs } = req.body as UserScheduleEdit;
     // Verify the request.
     if (payload.eventUrl !== eventUrl || payload.username !== username) {
       throw new Error('Not authorized');
