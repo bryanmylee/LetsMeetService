@@ -79,7 +79,9 @@ app.post('/:eventUrl/login', async (req, res, next) => {
         = await getUserCredentials(eventUrl, username);
     // Verify the request.
     const valid = await comparePasswordHash(password, passwordHash);
-    if (!valid) throw new Error('Password invalid');
+    if (!valid) {
+      throw new Error('Password invalid');
+    }
     // Return a response.
     const userType = isAdmin ? UserType.ADMIN : UserType.DEFAULT;
     const { accessToken, refreshToken }

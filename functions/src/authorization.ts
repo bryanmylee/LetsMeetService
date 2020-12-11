@@ -39,8 +39,9 @@ export async function comparePasswordHash(password: string, hash: string) {
  */
 export function getAuthorizationPayload(req: Request) {
   const { authorization } = req.headers;
-  if (!authorization) throw new Error('Authentication not found.');
-
+  if (!authorization) {
+    throw new Error('Authentication not found.');
+  }
   // Auth header is in the format: 'Bearer {token}'
   const token = authorization.split(' ')[1];
   return getAccessTokenPayload(token);
@@ -58,12 +59,16 @@ export async function getNewAccessToken(req: any, res: any) {
     const { eventUrl } = req.params;
     const { __session: refreshToken }: { __session: string } = req.cookies;
     // Verify the request.
-    if (refreshToken == null) throw new Error('Refresh token not found');
+    if (refreshToken == null) {
+      throw new Error('Refresh token not found');
+    }
     // Verify that the token is not tampered with, and retrieve the payload.
     const { username, isAdmin } = getRefreshTokenPayload(refreshToken);
     // Handle database logic.
     const storedRefreshToken = await getRefreshToken(eventUrl, username);
-    if (storedRefreshToken == null) throw new Error('User invalid');
+    if (storedRefreshToken == null) {
+      throw new Error('User invalid');
+    }
     if (storedRefreshToken !== refreshToken) {
       throw new Error('Refresh token invalid');
     }

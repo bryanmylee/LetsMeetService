@@ -25,7 +25,7 @@ export async function createNewEvent(
     title: string, description: string, color: string,
     scheduleInMs: { start: number, end: number }[]) {
   const eventRef = db.collection('event').doc();
-  const { id: newId } = eventRef;
+  const newId = eventRef.id;
   const eventUrl = generateId(newId, 2);
   await eventRef.set({
     eventUrl,
@@ -73,7 +73,7 @@ async function getQueryDoc(eventUrl: string) {
       .collection('event')
       .where('eventUrl', '==', eventUrl)
       .get();
-  const { docs: queryDocs } = snapshot;
+  const queryDocs = snapshot.docs;
   if (queryDocs.length > 1) {
     throw new Error(`Duplicate events with id ${eventUrl}`);
   } else if (queryDocs.length === 0) {
@@ -169,7 +169,8 @@ export async function getRefreshToken(eventUrl: string, username: string) {
 }
 
 /**
- * Store a user's refresh token to allow verification of refresh tokens.
+ * Store a user's refresh token in the database to allow verification of refresh
+ * tokens.
  * @param eventUrl The url identifier of the event.
  * @param username The username to store the refresh token of.
  * @param refreshToken The refresh token to store.
