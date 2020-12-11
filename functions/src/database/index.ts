@@ -1,6 +1,5 @@
 import * as admin from 'firebase-admin';
 import Interval from '../types/Interval';
-import UserType from '../types/UserType';
 import dayjs from 'dayjs';
 import { generateId } from 'gfycat-ids';
 
@@ -94,8 +93,7 @@ namespace Database {
    */
   export async function insertNewUser(
       eventUrl: string, username: string, passwordHash: string,
-      scheduleInMs: Interval[] = [],
-      userType = UserType.DEFAULT) {
+      scheduleInMs: Interval[] = []) {
     const queryDoc = await getQueryDoc(eventUrl);
     const userRef = queryDoc.ref.collection('user').doc(username);
     if ((await userRef.get()).exists) {
@@ -104,7 +102,6 @@ namespace Database {
     await userRef.set({
       passwordHash,
       scheduleInMs,
-      isAdmin: userType === UserType.ADMIN,
     });
   }
 

@@ -4,7 +4,6 @@ import { Response, Request } from 'express';
 
 import Database from './database';
 import Token from './tokens';
-import UserType from './types/UserType';
 
 namespace Auth {
   /**
@@ -59,7 +58,7 @@ namespace Auth {
         throw new Error('Refresh token not found');
       }
       // Verify that the token is not tampered with, and retrieve the payload.
-      const { username, isAdmin } = Token.getRefreshTokenPayload(refreshToken);
+      const { username } = Token.getRefreshTokenPayload(refreshToken);
       // Handle database logic.
       const storedRefreshToken = await Database.getRefreshToken(eventUrl, username);
       if (storedRefreshToken == null) {
@@ -69,9 +68,8 @@ namespace Auth {
         throw new Error('Refresh token invalid');
       }
       // Return a response.
-      const userType = isAdmin ? UserType.ADMIN : UserType.DEFAULT;
       const { accessToken, refreshToken: newRefreshToken }
-          = await generateAndPersistTokens(eventUrl, username, userType);
+          = await generateAndPersistTokens(eventUrl, username);
       setRefreshTokenCookie(req, res, eventUrl, newRefreshToken);
       return accessToken;
   }
@@ -84,9 +82,9 @@ namespace Auth {
    * @returns The access token generated from the login.
    */
   export async function generateAndPersistTokens(
-      eventUrl: string, username: string, userType: UserType = UserType.DEFAULT) {
-    const accessToken = Token.createAccessToken(eventUrl, username, userType);
-    const refreshToken = Token.createRefreshToken(eventUrl, username, userType);
+      eventUrl: string, username: string) {
+    const accessToken = Token.createAccessToken(eventUrl, username);
+    const refreshToken = Token.createRefreshToken(eventUrl, username);
 
     // Store the refresh token in the database.
     await Database.storeRefreshToken(eventUrl, username, refreshToken);

@@ -7,7 +7,6 @@ import Event from './types/Event';
 import UserLogin from './types/UserLogin';
 import UserScheduleEdit from './types/UserScheduleEdit';
 import UserSignup from './types/UserSignup';
-import UserType from './types/UserType';
 import { applyPreMiddlewares, applyPostMiddlewares } from './middlewares';
 
 const app = express();
@@ -57,7 +56,7 @@ app.post('/:eventUrl/login', async (req, res, next) => {
     const { eventUrl } = req.params;
     const { username, password } = req.body as UserLogin;
     // Handle database logic.
-    const { passwordHash, isAdmin }
+    const { passwordHash }
         = await Database.getUserCredentials(eventUrl, username);
     // Verify the request.
     const valid = await Auth.comparePasswordHash(password, passwordHash);
@@ -65,9 +64,8 @@ app.post('/:eventUrl/login', async (req, res, next) => {
       throw new Error('Password invalid');
     }
     // Return a response.
-    const userType = isAdmin ? UserType.ADMIN : UserType.DEFAULT;
     const { accessToken, refreshToken }
-        = await Auth.generateAndPersistTokens(eventUrl, username, userType);
+        = await Auth.generateAndPersistTokens(eventUrl, username);
     Auth.setRefreshTokenCookie(req, res, eventUrl, refreshToken);
     res.send({ accessToken });
   } catch (err) {
