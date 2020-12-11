@@ -52,7 +52,7 @@ namespace Auth {
   export async function getNewAccessToken(req: any, res: any) {
       // Parse the request.
       const { eventUrl } = req.params;
-      const { __session: refreshToken }: { __session: string } = req.cookies;
+      const refreshToken: string = req.cookies['__session'];
       // Verify the request.
       if (refreshToken == null) {
         throw new Error('Refresh token not found');
