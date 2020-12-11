@@ -2,6 +2,7 @@ import * as admin from 'firebase-admin';
 import { generateId } from 'gfycat-ids';
 import dayjs from 'dayjs';
 import UserType from '../types/UserType';
+import Interval from '../types/Interval';
 
 admin.initializeApp({
   credential: admin.credential.applicationDefault(),
@@ -23,7 +24,7 @@ export const db = admin.firestore();
  */
 export async function createNewEvent(
     title: string, description: string, color: string,
-    scheduleInMs: { start: number, end: number }[]) {
+    scheduleInMs: Interval[]) {
   const eventRef = db.collection('event').doc();
   const newId = eventRef.id;
   const eventUrl = generateId(newId, 2);
@@ -51,11 +52,11 @@ export async function getEvent(eventUrl: string) {
     description: string,
     color: string,
     admin: string,
-    scheduleInMs: { start: number, end: number }[]
+    scheduleInMs: Interval[]
   };
   const userQuerySnapshot = await queryDoc.ref.collection('user').get();
   const userSchedulesInMs: {
-    [username: string]: { start: number, end: number }[]
+    [username: string]: Interval[]
   } = {};
   userQuerySnapshot.docs.forEach((doc) => {
     userSchedulesInMs[doc.id] = doc.data().scheduleInMs ?? [];
@@ -92,7 +93,7 @@ async function getQueryDoc(eventUrl: string) {
  */
 export async function insertNewUser(
     eventUrl: string, username: string, passwordHash: string,
-    scheduleInMs: { start: number, end: number }[] = [],
+    scheduleInMs: Interval[] = [],
     userType = UserType.DEFAULT) {
   const queryDoc = await getQueryDoc(eventUrl);
   const userRef = queryDoc.ref.collection('user').doc(username);
@@ -114,7 +115,7 @@ export async function insertNewUser(
  */
 export async function updateUserIntervals(
     eventUrl: string, username: string,
-    newScheduleInMs: { start: number, end: number }[] = []) {
+    newScheduleInMs: Interval[] = []) {
   const queryDoc = await getQueryDoc(eventUrl);
   const userRef = queryDoc.ref.collection('user').doc(username);
   await userRef.set({ scheduleInMs: newScheduleInMs }, { merge: true })

@@ -19,6 +19,7 @@ import {
 } from './database';
 import { applyPreMiddlewares, applyPostMiddlewares } from './middlewares';
 import UserType from './types/UserType';
+import Interval from './types/Interval';
 
 const app = express();
 applyPreMiddlewares(app);
@@ -29,7 +30,7 @@ app.post('/new', async (req, res, next) => {
     // Parse the request
     const { title, description, color, scheduleInMs }: {
       title: string, description: string, color: string,
-      scheduleInMs: { start: number, end: number }[]
+      scheduleInMs: Interval[]
     } = req.body;
     if (scheduleInMs == null || scheduleInMs.length === 0) {
       throw new Error('scheduleInMs cannot be empty');
@@ -50,7 +51,7 @@ app.post('/:eventUrl/new_user', async (req, res, next) => {
     const { eventUrl } = req.params;
     const { username, password, scheduleInMs }: {
       username: string, password: string,
-      scheduleInMs: { start: number, end: number }[]
+      scheduleInMs: Interval[]
     } = req.body;
     const passwordHash = await generatePasswordHash(password);
     // Handle database logic.
@@ -121,7 +122,7 @@ app.post('/:eventUrl/:username/edit', async (req, res, next) => {
     const { eventUrl, username } = req.params;
     const payload = getAuthorizationPayload(req);
     const { newScheduleInMs }: {
-      newScheduleInMs: { start: number, end: number }[]
+      newScheduleInMs: Interval[]
     } = req.body;
     // Verify the request.
     if (payload.eventUrl !== eventUrl || payload.username !== username) {
