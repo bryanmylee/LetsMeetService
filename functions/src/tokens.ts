@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions';
 import jwt from 'jsonwebtoken';
-import UserType from './types/UserType';
 
+import UserType from './types/UserType';
 namespace Token {
   /**
    * Generate a signed access token with a specified payload.

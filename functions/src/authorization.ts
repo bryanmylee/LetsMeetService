@@ -1,9 +1,9 @@
 import * as functions from 'firebase-functions';
-import { Response, Request } from 'express';
 import bcrypt from 'bcryptjs';
+import { Response, Request } from 'express';
 
-import Token from './tokens';
 import Database from './database';
+import Token from './tokens';
 import UserType from './types/UserType';
 
 namespace Auth {

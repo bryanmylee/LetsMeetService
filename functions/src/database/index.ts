@@ -1,8 +1,8 @@
 import * as admin from 'firebase-admin';
-import { generateId } from 'gfycat-ids';
-import dayjs from 'dayjs';
-import UserType from '../types/UserType';
 import Interval from '../types/Interval';
+import UserType from '../types/UserType';
+import dayjs from 'dayjs';
+import { generateId } from 'gfycat-ids';
 
 admin.initializeApp({
   credential: admin.credential.applicationDefault(),

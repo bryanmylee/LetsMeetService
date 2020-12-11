@@ -1,6 +1,6 @@
-import { Application, Request, Response, NextFunction } from 'express';
-import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import { Application, Request, Response, NextFunction } from 'express';
 
 export function applyPreMiddlewares(app: Application) {
   // Expose simple interface for cookies
