@@ -2,7 +2,7 @@ import * as admin from 'firebase-admin';
 import dayjs from 'dayjs';
 import { generateId } from 'gfycat-ids';
 
-import Interval from '../types/Interval';
+import Interval from '../model/Interval';
 
 admin.initializeApp({
   credential: admin.credential.applicationDefault(),

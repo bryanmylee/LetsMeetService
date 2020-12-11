@@ -3,10 +3,10 @@ import express from 'express';
 
 import * as auth from './service/authorization';
 import * as db from './database';
-import Event from './types/Event';
-import UserLogin from './types/UserLogin';
-import UserScheduleEdit from './types/UserScheduleEdit';
-import UserSignup from './types/UserSignup';
+import Event from './model/Event';
+import UserLogin from './model/UserLogin';
+import UserScheduleEdit from './model/UserScheduleEdit';
+import UserSignup from './model/UserSignup';
 import { applyPreMiddlewares, applyPostMiddlewares } from './middlewares';
 
 const app = express();
