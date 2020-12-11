@@ -1,22 +1,8 @@
 import * as functions from 'firebase-functions';
 import express from 'express';
 
-import {
-  generatePasswordHash,
-  comparePasswordHash,
-  getAuthorizationPayload,
-  generateAndPersistTokens,
-  setRefreshTokenCookie,
-  clearRefreshTokenCookie,
-  getNewAccessToken,
-} from './authorization';
-import {
-  createNewEvent,
-  getEvent,
-  insertNewUser,
-  updateUserIntervals,
-  getUserCredentials,
-} from './database';
+import Auth from './authorization';
+import Database from './database';
 import { applyPreMiddlewares, applyPostMiddlewares } from './middlewares';
 import UserType from './types/UserType';
 import Interval from './types/Interval';
@@ -36,7 +22,7 @@ app.post('/new', async (req, res, next) => {
       throw new Error('scheduleInMs cannot be empty');
     }
     // Handle database logic
-    const { eventUrl } = await createNewEvent(title, description, color, scheduleInMs);
+    const { eventUrl } = await Database.createNewEvent(title, description, color, scheduleInMs);
     // Return a response
     res.send({ eventUrl });
   } catch (err) {
@@ -53,13 +39,13 @@ app.post('/:eventUrl/new_user', async (req, res, next) => {
       username: string, password: string,
       scheduleInMs: Interval[]
     } = req.body;
-    const passwordHash = await generatePasswordHash(password);
+    const passwordHash = await Auth.generatePasswordHash(password);
     // Handle database logic.
-    await insertNewUser(eventUrl, username, passwordHash, scheduleInMs);
+    await Database.insertNewUser(eventUrl, username, passwordHash, scheduleInMs);
     // Generate and store tokens.
     const { accessToken, refreshToken }
-        = await generateAndPersistTokens(eventUrl, username);
-    setRefreshTokenCookie(req, res, eventUrl, refreshToken);
+        = await Auth.generateAndPersistTokens(eventUrl, username);
+    Auth.setRefreshTokenCookie(req, res, eventUrl, refreshToken);
     // Return a response.
     res.send({ eventUrl, accessToken });
   } catch (err) {
@@ -77,17 +63,17 @@ app.post('/:eventUrl/login', async (req, res, next) => {
     } = req.body;
     // Handle database logic.
     const { passwordHash, isAdmin }
-        = await getUserCredentials(eventUrl, username);
+        = await Database.getUserCredentials(eventUrl, username);
     // Verify the request.
-    const valid = await comparePasswordHash(password, passwordHash);
+    const valid = await Auth.comparePasswordHash(password, passwordHash);
     if (!valid) {
       throw new Error('Password invalid');
     }
     // Return a response.
     const userType = isAdmin ? UserType.ADMIN : UserType.DEFAULT;
     const { accessToken, refreshToken }
-        = await generateAndPersistTokens(eventUrl, username, userType);
-    setRefreshTokenCookie(req, res, eventUrl, refreshToken);
+        = await Auth.generateAndPersistTokens(eventUrl, username, userType);
+    Auth.setRefreshTokenCookie(req, res, eventUrl, refreshToken);
     res.send({ accessToken });
   } catch (err) {
     next(err);
@@ -98,7 +84,7 @@ app.post('/:eventUrl/login', async (req, res, next) => {
 app.post('/:eventUrl/logout', async (req, res) => {
   // Parse the request.
   const { eventUrl } = req.params;
-  clearRefreshTokenCookie(req, res, eventUrl);
+  Auth.clearRefreshTokenCookie(req, res, eventUrl);
   // Return a response.
   res.send({
     message: 'Logged out',
@@ -108,7 +94,7 @@ app.post('/:eventUrl/logout', async (req, res) => {
 // Issue new access tokens.
 app.post('/:eventUrl/refresh_token', async (req, res, next) => {
   try {
-    const accessToken = getNewAccessToken(req, res);
+    const accessToken = Auth.getNewAccessToken(req, res);
     res.send({ accessToken });
   } catch (err) {
     next(err);
@@ -120,7 +106,7 @@ app.post('/:eventUrl/:username/edit', async (req, res, next) => {
   try {
     // Parse the request.
     const { eventUrl, username } = req.params;
-    const payload = getAuthorizationPayload(req);
+    const payload = Auth.getAuthorizationPayload(req);
     const { newScheduleInMs }: {
       newScheduleInMs: Interval[]
     } = req.body;
@@ -129,7 +115,7 @@ app.post('/:eventUrl/:username/edit', async (req, res, next) => {
       throw new Error('Not authorized');
     }
     // Handle database logic.
-    await updateUserIntervals(eventUrl, username, newScheduleInMs);
+    await Database.updateUserIntervals(eventUrl, username, newScheduleInMs);
     // Return a response.
     res.send({
       message: 'Updated schedule',
@@ -145,10 +131,10 @@ app.get('/:eventUrl', async (req, res, next) => {
     // Parse the request
     const { eventUrl } = req.params;
     // Handle database logic
-    const event = await getEvent(eventUrl);
+    const event = await Database.getEvent(eventUrl);
     let accessToken = null;
     try {
-      accessToken = await getNewAccessToken(req, res);
+      accessToken = await Auth.getNewAccessToken(req, res);
     } catch {}
     // Return a response
     res.send({
