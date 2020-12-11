@@ -20,8 +20,8 @@
     "dayjs": "^1.8.28",
     "dayjs-plugin-utc": "^0.1.2",
     "express": "^4.17.1",
-    "firebase-admin": "^8.10.0",
-    "firebase-functions": "^3.6.1",
+    "firebase-admin": "^9.4.2",
+    "firebase-functions": "^3.13.0",
     "gfycat-ids": "^1.0.1",
     "jsonwebtoken": "^8.5.1"
   },
