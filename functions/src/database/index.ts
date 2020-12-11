@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import { generateId } from 'gfycat-ids';
 
 import Interval from '../model/Interval';
+import Event from '../model/Event';
 
 admin.initializeApp({
   credential: admin.credential.applicationDefault(),
@@ -46,14 +47,7 @@ export async function createNewEvent(
  */
 export async function getEvent(eventUrl: string) {
   const queryDoc = await getQueryDoc(eventUrl);
-  const event = queryDoc.data() as {
-    title: string,
-    eventUrl: string,
-    description: string,
-    color: string,
-    admin: string,
-    scheduleInMs: Interval[]
-  };
+  const event = queryDoc.data() as Event;
   const userQuerySnapshot = await queryDoc.ref.collection('user').get();
   const userSchedulesInMs: {
     [username: string]: Interval[]
@@ -132,17 +126,15 @@ export async function getUserCredentials(eventUrl: string, username: string) {
   const userRef = queryDoc.ref.collection('user').doc(username);
   const snapshot = await userRef.get();
   const user = snapshot.data() as {
-    isAdmin: boolean,
     passwordHash: string,
     refreshToken: string,
   };
   if (user == null) {
     throw new Error('User not found');
   }
-  return ({
+  return {
     passwordHash: user.passwordHash,
-    isAdmin: user.isAdmin,
-  });
+  };
 }
 
 /**
@@ -157,7 +149,6 @@ export async function getRefreshToken(eventUrl: string, username: string) {
   const userRef = queryDoc.ref.collection('user').doc(username);
   const snapshot = await userRef.get();
   const user = snapshot.data() as {
-    isAdmin: boolean,
     passwordHash: string,
     refreshToken: string,
   };
