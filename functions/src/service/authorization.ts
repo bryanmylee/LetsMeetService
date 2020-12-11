@@ -2,8 +2,8 @@ import * as functions from 'firebase-functions';
 import bcrypt from 'bcryptjs';
 import { Response, Request } from 'express';
 
-import * as Database from '../database';
-import * as Token from './tokens';
+import * as db from '../database';
+import * as token from './tokens';
 
 /**
  * Generate a password hash.
@@ -37,8 +37,8 @@ export function getRequestAuthPayload(req: Request) {
     throw new Error('Authentication not found');
   }
   // Auth header is in the format: 'Bearer {token}'
-  const token = authorization.split(' ')[1];
-  return Token.getAccessTokenBody(token);
+  const encodedToken = authorization.split(' ')[1];
+  return token.getAccessTokenBody(encodedToken);
 }
 
 /**
@@ -57,9 +57,9 @@ export async function refreshAccessToken(req: any, res: any) {
       throw new Error('Refresh token not found');
     }
     // Verify that the token is not tampered with, and retrieve the payload.
-    const { username } = Token.getRefreshTokenBody(refreshToken);
+    const { username } = token.getRefreshTokenBody(refreshToken);
     // Handle database logic.
-    const storedRefreshToken = await Database.getRefreshToken(eventUrl, username);
+    const storedRefreshToken = await db.getRefreshToken(eventUrl, username);
     if (storedRefreshToken == null) {
       throw new Error('User invalid');
     }
@@ -82,11 +82,11 @@ export async function refreshAccessToken(req: any, res: any) {
  */
 export async function generateAndPersistTokens(
     eventUrl: string, username: string) {
-  const accessToken = Token.createAccessToken(eventUrl, username);
-  const refreshToken = Token.createRefreshToken(eventUrl, username);
+  const accessToken = token.createAccessToken(eventUrl, username);
+  const refreshToken = token.createRefreshToken(eventUrl, username);
 
   // Store the refresh token in the database.
-  await Database.storeRefreshToken(eventUrl, username, refreshToken);
+  await db.storeRefreshToken(eventUrl, username, refreshToken);
 
   return { accessToken, refreshToken };
 }

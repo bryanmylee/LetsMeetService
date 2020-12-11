@@ -1,8 +1,8 @@
 import * as functions from 'firebase-functions';
 import express from 'express';
 
-import * as Auth from './service/authorization';
-import * as Database from './database';
+import * as auth from './service/authorization';
+import * as db from './database';
 import Event from './types/Event';
 import UserLogin from './types/UserLogin';
 import UserScheduleEdit from './types/UserScheduleEdit';
@@ -21,7 +21,7 @@ app.post('/new', async (req, res, next) => {
       throw new Error('scheduleInMs cannot be empty');
     }
     // Handle database logic
-    const { eventUrl } = await Database.createNewEvent(title, description, color, scheduleInMs);
+    const { eventUrl } = await db.createNewEvent(title, description, color, scheduleInMs);
     // Return a response
     res.send({ eventUrl });
   } catch (err) {
@@ -35,13 +35,13 @@ app.post('/:eventUrl/new_user', async (req, res, next) => {
     // Parse the request.
     const { eventUrl } = req.params;
     const { username, password, scheduleInMs } = req.body as UserSignup;
-    const passwordHash = await Auth.generatePasswordHash(password);
+    const passwordHash = await auth.generatePasswordHash(password);
     // Handle database logic.
-    await Database.insertNewUser(eventUrl, username, passwordHash, scheduleInMs);
+    await db.insertNewUser(eventUrl, username, passwordHash, scheduleInMs);
     // Generate and store tokens.
     const { accessToken, refreshToken }
-        = await Auth.generateAndPersistTokens(eventUrl, username);
-    Auth.setRefreshTokenCookie(req, res, eventUrl, refreshToken);
+        = await auth.generateAndPersistTokens(eventUrl, username);
+    auth.setRefreshTokenCookie(req, res, eventUrl, refreshToken);
     // Return a response.
     res.send({ eventUrl, accessToken });
   } catch (err) {
@@ -57,16 +57,16 @@ app.post('/:eventUrl/login', async (req, res, next) => {
     const { username, password } = req.body as UserLogin;
     // Handle database logic.
     const { passwordHash }
-        = await Database.getUserCredentials(eventUrl, username);
+        = await db.getUserCredentials(eventUrl, username);
     // Verify the request.
-    const valid = await Auth.comparePasswordHash(password, passwordHash);
+    const valid = await auth.comparePasswordHash(password, passwordHash);
     if (!valid) {
       throw new Error('Password invalid');
     }
     // Return a response.
     const { accessToken, refreshToken }
-        = await Auth.generateAndPersistTokens(eventUrl, username);
-    Auth.setRefreshTokenCookie(req, res, eventUrl, refreshToken);
+        = await auth.generateAndPersistTokens(eventUrl, username);
+    auth.setRefreshTokenCookie(req, res, eventUrl, refreshToken);
     res.send({ accessToken });
   } catch (err) {
     next(err);
@@ -77,7 +77,7 @@ app.post('/:eventUrl/login', async (req, res, next) => {
 app.post('/:eventUrl/logout', async (req, res) => {
   // Parse the request.
   const { eventUrl } = req.params;
-  Auth.clearRefreshTokenCookie(req, res, eventUrl);
+  auth.clearRefreshTokenCookie(req, res, eventUrl);
   // Return a response.
   res.send({
     message: 'Logged out',
@@ -87,7 +87,7 @@ app.post('/:eventUrl/logout', async (req, res) => {
 // Issue new access tokens.
 app.post('/:eventUrl/refresh_token', async (req, res, next) => {
   try {
-    const accessToken = await Auth.refreshAccessToken(req, res);
+    const accessToken = await auth.refreshAccessToken(req, res);
     res.send({ accessToken });
   } catch (err) {
     next(err);
@@ -99,14 +99,14 @@ app.post('/:eventUrl/:username/edit', async (req, res, next) => {
   try {
     // Parse the request.
     const { eventUrl, username } = req.params;
-    const payload = Auth.getRequestAuthPayload(req);
+    const payload = auth.getRequestAuthPayload(req);
     const { newScheduleInMs } = req.body as UserScheduleEdit;
     // Verify the request.
     if (payload.eventUrl !== eventUrl || payload.username !== username) {
       throw new Error('Not authorized');
     }
     // Handle database logic.
-    await Database.updateUserIntervals(eventUrl, username, newScheduleInMs);
+    await db.updateUserIntervals(eventUrl, username, newScheduleInMs);
     // Return a response.
     res.send({
       message: 'Updated schedule',
@@ -122,10 +122,10 @@ app.get('/:eventUrl', async (req, res, next) => {
     // Parse the request
     const { eventUrl } = req.params;
     // Handle database logic
-    const event = await Database.getEvent(eventUrl);
+    const event = await db.getEvent(eventUrl);
     let accessToken = null;
     try {
-      accessToken = await Auth.refreshAccessToken(req, res);
+      accessToken = await auth.refreshAccessToken(req, res);
     } catch {}
     // Return a response
     res.send({
