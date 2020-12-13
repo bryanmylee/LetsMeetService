@@ -6,7 +6,12 @@ export function applyPreMiddlewares(app: Application) {
   // Expose simple interface for cookies
   app.use(cookieParser());
   // Control cross-origin resource sharing
-  app.use(cors({ origin: true, credentials: true }))
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    next();
+  }, cors({
+    origin: true,
+    credentials: true,
+  }));
 }
 
 export function applyPostMiddlewares(app: Application) {
