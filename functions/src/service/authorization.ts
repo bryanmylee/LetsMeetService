@@ -2,7 +2,7 @@ import * as functions from 'firebase-functions';
 import bcrypt from 'bcryptjs';
 import { Response, Request } from 'express';
 
-import * as db from '../database';
+import EventRepo from '../database/EventRepo';
 import * as token from './tokens';
 
 /**
@@ -48,7 +48,7 @@ export function getRequestAuthPayload(req: Request) {
  * @param res The HTTP/S response to send.
  * @returns A promise that resolves with the new access token.
  */
-export async function refreshAccessToken(req: any, res: any) {
+export async function refreshAccessToken(eventRepo: EventRepo, req: any, res: any) {
     // Parse the request.
     const { eventUrl } = req.params;
     const refreshToken: string = req.cookies['__session'];
@@ -59,7 +59,7 @@ export async function refreshAccessToken(req: any, res: any) {
     // Verify that the token is not tampered with, and retrieve the payload.
     const { username } = token.getRefreshTokenBody(refreshToken);
     // Handle database logic.
-    const storedRefreshToken = await db.getRefreshToken(eventUrl, username);
+    const storedRefreshToken = await eventRepo.getUserRefreshToken(eventUrl, username);
     if (storedRefreshToken == null) {
       throw new Error('User invalid');
     }
@@ -68,7 +68,7 @@ export async function refreshAccessToken(req: any, res: any) {
     }
     // Return a response.
     const { accessToken, refreshToken: newRefreshToken }
-        = await generateAndPersistTokens(eventUrl, username);
+        = await generateAndPersistTokens(eventRepo, eventUrl, username);
     setRefreshTokenCookie(req, res, eventUrl, newRefreshToken);
     return accessToken;
 }
@@ -81,12 +81,12 @@ export async function refreshAccessToken(req: any, res: any) {
  * @returns The access token generated from the login.
  */
 export async function generateAndPersistTokens(
-    eventUrl: string, username: string) {
+    eventRepo: EventRepo, eventUrl: string, username: string) {
   const accessToken = token.createAccessToken(eventUrl, username);
   const refreshToken = token.createRefreshToken(eventUrl, username);
 
   // Store the refresh token in the database.
-  await db.storeRefreshToken(eventUrl, username, refreshToken);
+  await eventRepo.setUserRefreshToken(eventUrl, username, refreshToken);
 
   return { accessToken, refreshToken };
 }
