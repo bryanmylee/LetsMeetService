@@ -15,10 +15,10 @@ export default class EventRepo {
   }
 
   /**
-  * Get the query of an event with a given url identifier.
-  * @param eventUrl The url identifier of the event.
-  * @returns A query of the event document.
-  */
+   * Get the query of an event with a given url identifier.
+   * @param eventUrl The url identifier of the event.
+   * @returns A query of the event document.
+   */
   private async queryEvent(eventUrl: string) {
     const queried = await this.repo
         .where('eventUrl', '==', eventUrl)
@@ -32,13 +32,13 @@ export default class EventRepo {
   }
 
   /**
-  * Insert a new event into the database.
-  * @param title       The title of the event.
-  * @param description The description of the event.
-  * @param color       The color hex of the event.
-  * @param schedule    The event schedule.
-  * @returns An pair of the new internal identifier and new url idenfifier.
-  */
+   * Insert a new event into the database.
+   * @param title       The title of the event.
+   * @param description The description of the event.
+   * @param color       The color hex of the event.
+   * @param schedule    The event schedule.
+   * @returns An pair of the new internal identifier and new url idenfifier.
+   */
   async insert(
       title: string, description: string,
       color: string, schedule: Interval[]) {
@@ -56,10 +56,10 @@ export default class EventRepo {
   }
 
   /**
-  * Get the details of an event with a given url identifier.
-  * @param eventUrl The url identifier of the event.
-  * @returns A promise that resolves to an object describing an event.
-  */
+   * Get the details of an event with a given url identifier.
+   * @param eventUrl The url identifier of the event.
+   * @returns A promise that resolves to an object describing an event.
+   */
   async get(eventUrl: string) {
     const eventQuery = await this.queryEvent(eventUrl);
     const event = eventQuery.data() as Event;
@@ -73,12 +73,12 @@ export default class EventRepo {
   }
 
   /**
-  * Add a new user to an event.
-  * @param eventUrl     The url identifier of the event.
-  * @param username     The username of the new user.
-  * @param passwordHash The password hash of the new user.
-  * @param schedule     The available schedule of the user.
-  */
+   * Add a new user to an event.
+   * @param eventUrl     The url identifier of the event.
+   * @param username     The username of the new user.
+   * @param passwordHash The password hash of the new user.
+   * @param schedule     The available schedule of the user.
+   */
   async insertUserOnEvent(
       eventUrl: string, username: string,
       passwordHash: string, schedule: Interval[] = []) {
@@ -92,11 +92,11 @@ export default class EventRepo {
   }
 
   /**
-  * Update schedule information of a user.
-  * @param eventUrl    The url identifier of the event.
-  * @param username    The username of the user.
-  * @param newSchedule The new schedule of the user.
-  */
+   * Update schedule information of a user.
+   * @param eventUrl    The url identifier of the event.
+   * @param username    The username of the user.
+   * @param newSchedule The new schedule of the user.
+   */
   async updateUserOnEvent(
       eventUrl: string, username: string,
       newSchedule: Interval[] = []) {
@@ -109,11 +109,11 @@ export default class EventRepo {
   }
 
   /**
-  * Get the password hash of a user.
-  * @param eventUrl The url identifier of the event to which the user belongs.
-  * @param username The username of the user to find credentials of.
-  * @returns The password hash of the user.
-  */
+   * Get the password hash of a user.
+   * @param eventUrl The url identifier of the event to which the user belongs.
+   * @param username The username of the user to find credentials of.
+   * @returns The password hash of the user.
+   */
   async getUserPasswordHash(eventUrl: string, username: string) {
     const eventQuery = await this.queryEvent(eventUrl);
     const userRef = eventQuery.ref.collection('user').doc(username);
@@ -129,11 +129,11 @@ export default class EventRepo {
   }
 
   /**
-  * Get the refresh token of a user.
-  * @param eventUrl The url identifier of the event to which the user belongs.
-  * @param username The username of the user.
-  * @returns A promise that resolves to the refresh token of the user.
-  */
+   * Get the refresh token of a user.
+   * @param eventUrl The url identifier of the event to which the user belongs.
+   * @param username The username of the user.
+   * @returns A promise that resolves to the refresh token of the user.
+   */
   async getUserRefreshToken(eventUrl: string, username: string) {
     const eventQuery = await this.queryEvent(eventUrl);
     const userRef = eventQuery.ref.collection('user').doc(username);
@@ -149,12 +149,12 @@ export default class EventRepo {
   }
 
   /**
-  * Set the refresh token of a user.
-  * @param eventUrl     The url identifier of the event to which the user
-  *                     belongs.
-  * @param username     The username of the user.
-  * @param refreshToken The refresh token to store.
-  */
+   * Set the refresh token of a user.
+   * @param eventUrl     The url identifier of the event to which the user
+   *                     belongs.
+   * @param username     The username of the user.
+   * @param refreshToken The refresh token to store.
+   */
   async setUserRefreshToken(
       eventUrl: string, username: string, refreshToken: string) {
     const eventQuery = await this.queryEvent(eventUrl);
