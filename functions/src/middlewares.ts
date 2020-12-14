@@ -1,3 +1,4 @@
+import * as functions from 'firebase-functions';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import { Application, Request, Response, NextFunction } from 'express';
@@ -9,7 +10,7 @@ export function applyPreMiddlewares(app: Application) {
   app.use((req: Request, res: Response, next: NextFunction) => {
     next();
   }, cors({
-    origin: true,
+    origin: functions.config().api.client_host,
     credentials: true,
   }));
 }
@@ -30,3 +31,4 @@ const errorHandler = (
     stack: process.env.NODE_ENV === 'production' ? null : err.stack,
   });
 }
+
