@@ -1,0 +1,10 @@
+{
+  "api": {
+    "refresh_expiry": "1d",
+    "access_expiry": "15m",
+    "refresh_secret": "",
+    "password_salt_length": "12",
+    "access_secret": "",
+    "client_host": ""
+  }
+}
