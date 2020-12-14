@@ -7,3 +7,4 @@ export default interface Event {
   color: string;
   scheduleInMs: Interval[];
 }
+

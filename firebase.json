@@ -10,13 +10,14 @@
     ]
   },
   "emulators": {
-    "functions": {
-      "host": "0.0.0.0",
-      "port": "54001"
-    },
     "ui": {
       "host": "0.0.0.0",
       "port": "54000"
+    },
+    "functions": {
+      "host": "0.0.0.0",
+      "port": "54001"
     }
   }
 }
+

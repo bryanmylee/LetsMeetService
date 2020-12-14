@@ -70,3 +70,4 @@ export function getRefreshTokenBody(token: string) {
       jwt.verify(token, functions.config().api.refresh_secret) as any);
   return payload.formatted();
 }
+

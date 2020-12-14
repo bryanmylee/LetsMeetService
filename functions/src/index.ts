@@ -140,3 +140,4 @@ applyPostMiddlewares(app);
 export const api = functions
     .region('asia-east2')
     .https.onRequest(app);
+

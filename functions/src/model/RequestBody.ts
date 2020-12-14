@@ -14,3 +14,4 @@ export interface UserLogin {
 export interface UserScheduleEdit {
   newScheduleInMs: Interval[];
 }
+

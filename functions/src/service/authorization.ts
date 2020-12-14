@@ -136,3 +136,4 @@ function getBasePath(req: Request, eventUrl: string) {
   // could contain the eventUrl. We want the last instance of eventUrl.
   return tokens[tokens.length - 2] + eventUrl;
 }
+
