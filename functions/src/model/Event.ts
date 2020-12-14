@@ -5,6 +5,6 @@ export default interface Event {
   eventUrl?: string;
   description: string;
   color: string;
-  scheduleInMs: Interval[];
+  schedule: Interval[];
 }
 

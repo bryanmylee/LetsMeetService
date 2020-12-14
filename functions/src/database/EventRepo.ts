@@ -64,12 +64,12 @@ export default class EventRepo {
     const eventQuery = await this.queryEvent(eventUrl);
     const event = eventQuery.data() as Event;
     const userQueries = await eventQuery.ref.collection('user').get();
-    const schedules: Record<string, Interval[]> = {};
+    const userSchedules: Record<string, Interval[]> = {};
     userQueries.docs.forEach((doc) => {
       // usernames are used as user doc ids.
-      schedules[doc.id] = doc.data().schedule ?? [];
+      userSchedules[doc.id] = doc.data().schedule ?? [];
     })
-    return { ...event, schedules };
+    return { ...event, userSchedules };
   }
 
   /**
@@ -82,6 +82,7 @@ export default class EventRepo {
   async insertUserOnEvent(
       eventUrl: string, username: string,
       passwordHash: string, schedule: Interval[] = []) {
+    console.log(`got schedule ${schedule}`);
     const eventQuery = await this.queryEvent(eventUrl);
     const userRef = eventQuery.ref.collection('user').doc(username);
     if ((await userRef.get()).exists) {

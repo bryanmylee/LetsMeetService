@@ -13,7 +13,6 @@ devDependencies:
   '@types/bcryptjs': 2.4.2
   '@types/cookie-parser': 1.4.2
   '@types/cors': 2.8.9
-  '@types/express': 4.17.9
   '@types/jsonwebtoken': 8.5.0
   firebase-functions-test: 0.2.3_8d3d872d8b680b9f450b0473c8658427
   tslint: 5.20.1_typescript@3.9.7
@@ -2002,7 +2001,6 @@ specifiers:
   '@types/bcryptjs': ^2.4.2
   '@types/cookie-parser': ^1.4.2
   '@types/cors': ^2.8.9
-  '@types/express': ^4.17.9
   '@types/jsonwebtoken': ^8.5.0
   bcryptjs: ^2.4.3
   cookie-parser: ^1.4.5

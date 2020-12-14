@@ -3,7 +3,7 @@ import Interval from './Interval';
 export interface UserSignup {
   username: string;
   password: string;
-  scheduleInMs: Interval[];
+  schedule: Interval[];
 }
 
 export interface UserLogin {
@@ -12,6 +12,6 @@ export interface UserLogin {
 }
 
 export interface UserScheduleEdit {
-  newScheduleInMs: Interval[];
+  newSchedule: Interval[];
 }
 

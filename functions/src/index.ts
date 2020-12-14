@@ -16,12 +16,12 @@ const eventRepo = new EventRepo();
 app.post('/new', async (req, res, next) => {
   try {
     // Parse the request
-    const { title, description, color, scheduleInMs } = req.body as Event;
-    if (scheduleInMs == null || scheduleInMs.length === 0) {
-      throw new Error('scheduleInMs cannot be empty');
+    const { title, description, color, schedule } = req.body as Event;
+    if (schedule == null || schedule.length === 0) {
+      throw new Error('schedule cannot be empty');
     }
     // Handle database logic
-    const { eventUrl } = await eventRepo.insert(title, description, color, scheduleInMs);
+    const { eventUrl } = await eventRepo.insert(title, description, color, schedule);
     // Return a response
     res.send({ eventUrl });
   } catch (err) {
@@ -34,10 +34,10 @@ app.post('/:eventUrl/new_user', async (req, res, next) => {
   try {
     // Parse the request.
     const { eventUrl } = req.params;
-    const { username, password, scheduleInMs } = req.body as UserSignup;
+    const { username, password, schedule } = req.body as UserSignup;
     const passwordHash = await auth.generatePasswordHash(password);
     // Handle database logic.
-    await eventRepo.insertUserOnEvent(eventUrl, username, passwordHash, scheduleInMs);
+    await eventRepo.insertUserOnEvent(eventUrl, username, passwordHash, schedule);
     // Generate and store tokens.
     const { accessToken, refreshToken }
         = await auth.generateAndPersistTokens(eventRepo, eventUrl, username);
@@ -99,13 +99,13 @@ app.post('/:eventUrl/:username/edit', async (req, res, next) => {
     // Parse the request.
     const { eventUrl, username } = req.params;
     const payload = auth.getRequestAuthPayload(req);
-    const { newScheduleInMs } = req.body as UserScheduleEdit;
+    const { newSchedule } = req.body as UserScheduleEdit;
     // Verify the request.
     if (payload.eventUrl !== eventUrl || payload.username !== username) {
       throw new Error('Not authorized');
     }
     // Handle database logic.
-    await eventRepo.updateUserOnEvent(eventUrl, username, newScheduleInMs);
+    await eventRepo.updateUserOnEvent(eventUrl, username, newSchedule);
     // Return a response.
     res.send({
       message: 'Updated schedule',
