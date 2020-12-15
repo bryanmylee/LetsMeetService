@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import { generateId } from 'gfycat-ids';
 
+import HttpError from '../model/HttpError';
 import { db } from './Database';
 
 import type Event from '../model/Event';
@@ -24,9 +25,9 @@ export default class EventRepo {
         .where('eventUrl', '==', eventUrl)
         .get();
     if (queried.docs.length > 1) {
-      throw new Error(`Duplicate events with id ${eventUrl}`);
+      throw new HttpError(409, `Duplicate events with id ${eventUrl}`);
     } else if (queried.docs.length === 0) {
-      throw new Error(`Event with id ${eventUrl} not found`);
+      throw new HttpError(404, `Event with id ${eventUrl} not found`);
     }
     return queried.docs[0];
   }
@@ -86,7 +87,7 @@ export default class EventRepo {
     const eventQuery = await this.queryEvent(eventUrl);
     const userRef = eventQuery.ref.collection('user').doc(username);
     if ((await userRef.get()).exists) {
-      throw new Error(`Username ${username} already taken`);
+      throw new HttpError(409, `Username ${username} already taken`);
     }
     await userRef.set({ passwordHash, schedule });
   }
@@ -103,7 +104,7 @@ export default class EventRepo {
     const eventQuery = await this.queryEvent(eventUrl);
     const userRef = eventQuery.ref.collection('user').doc(username);
     if (!(await userRef.get()).exists) {
-      throw new Error(`User ${username} does not exist`);
+      throw new HttpError(404, `User ${username} does not exist`);
     }
     await userRef.set({ schedule: newSchedule }, { merge: true });
   }
@@ -123,7 +124,7 @@ export default class EventRepo {
       refreshToken: string,
     };
     if (user == null) {
-      throw new Error(`User ${username} does not exist`);
+      throw new HttpError(404, `User ${username} does not exist`);
     }
     return user.passwordHash;
   }
@@ -143,7 +144,7 @@ export default class EventRepo {
       refreshToken: string,
     };
     if (user == null) {
-      throw new Error(`User ${username} does not exist`);
+      throw new HttpError(404, `User ${username} does not exist`);
     }
     return user.refreshToken;
   }

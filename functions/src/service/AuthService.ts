@@ -5,6 +5,7 @@ import { Request } from 'express';
 import EventRepo from '../database/EventRepo';
 import TokenService from '../service/TokenService';
 import { setRefreshToken } from '../middlewares/CookieMiddleware';
+import HttpError from '../model/HttpError';
 
 export default class AuthService {
 
@@ -39,7 +40,7 @@ export default class AuthService {
   static getRequestAuthPayload(req: Request) {
     const { authorization } = req.headers;
     if (!authorization) {
-      throw new Error('Authentication not found');
+      throw new HttpError(401, 'Authentication not found');
     }
     // Auth header is in the format: 'Bearer {token}'
     const encodedToken = authorization.split(' ')[1];
@@ -57,17 +58,17 @@ export default class AuthService {
     const { eventUrl } = req.params;
     const refreshToken: string = req.cookies['__session'];
     if (refreshToken == null) {
-      throw new Error('Refresh token not found');
+      throw new HttpError(401, 'Refresh token not found');
     }
 
     const { username } = TokenService.getRefreshTokenBody(refreshToken);
     const storedRefreshToken = await this.eventRepo.getUserRefreshToken(eventUrl, username);
     if (storedRefreshToken == null) {
-      throw new Error('Refresh token identity mismatch');
+      throw new HttpError(401, 'Refresh token identity mismatch');
     }
 
     if (storedRefreshToken !== refreshToken) {
-      throw new Error('Refresh token is invalid');
+      throw new HttpError(401, 'Refresh token is invalid');
     }
 
     const { accessToken, refreshToken: newRefreshToken }

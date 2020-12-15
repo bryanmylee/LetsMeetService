@@ -4,9 +4,11 @@ import express from 'express';
 import AuthService from './service/AuthService';
 import Event from './model/Event';
 import EventRepo from './database/EventRepo';
+import HttpError from './model/HttpError';
 import { UserSignup, UserLogin, UserScheduleEdit } from './model/RequestBody';
-import { applyPreMiddlewares, applyPostMiddlewares } from './middlewares';
+import { applyPreMiddlewares } from './middlewares';
 import { setRefreshToken, clearRefreshToken } from './middlewares/CookieMiddleware';
+import { errorHandler } from './middlewares/ErrorMiddleware';
 
 const app = express();
 applyPreMiddlewares(app);
@@ -20,7 +22,7 @@ app.post('/new', async (req, res, next) => {
     // Parse the request
     const { title, description, color, schedule } = req.body as Event;
     if (schedule == null || schedule.length === 0) {
-      throw new Error('schedule cannot be empty');
+      throw new HttpError(400, 'Property \'schedule\' cannot be empty');
     }
     // Handle database logic
     const { eventUrl } = await eventRepo.insert(title, description, color, schedule);
@@ -62,7 +64,7 @@ app.post('/:eventUrl/login', async (req, res, next) => {
     // Verify the request.
     const valid = await AuthService.comparePasswordHash(password, passwordHash);
     if (!valid) {
-      throw new Error('Password invalid');
+      throw new HttpError(401, 'Password invalid');
     }
     // Return a response.
     const { accessToken, refreshToken }
@@ -104,7 +106,7 @@ app.post('/:eventUrl/:username/edit', async (req, res, next) => {
     const { newSchedule } = req.body as UserScheduleEdit;
     // Verify the request.
     if (payload.eventUrl !== eventUrl || payload.username !== username) {
-      throw new Error('Not authorized');
+      throw new HttpError(401, 'Not authorized');
     }
     // Handle database logic.
     await eventRepo.updateUserOnEvent(eventUrl, username, newSchedule);
@@ -138,7 +140,7 @@ app.get('/:eventUrl', async (req, res, next) => {
   }
 });
 
-applyPostMiddlewares(app);
+app.use(errorHandler);
 
 export const api = functions
     .region('asia-east2')

@@ -15,20 +15,3 @@ export function applyPreMiddlewares(app: Application) {
   }));
 }
 
-export function applyPostMiddlewares(app: Application) {
-  app.use(errorHandler);
-}
-
-interface ResponseError extends Error {
-  status?: number;
-}
-
-const errorHandler = (
-    err: ResponseError, req: Request,
-    res: Response, next: NextFunction) => {
-  res.send({
-    error: err.message,
-    stack: process.env.NODE_ENV === 'production' ? null : err.stack,
-  });
-}
-
