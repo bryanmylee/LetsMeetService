@@ -18,10 +18,10 @@ const eventRepo = new EventRepo();
 const authService = new AuthService(eventRepo);
 
 app.post('/new', newEvent(eventRepo));
-app.post('/:eventUrl/new_user', newUser(eventRepo, authService));
+app.post('/:eventUrl/new-user', newUser(eventRepo, authService));
 app.post('/:eventUrl/login', login(eventRepo, authService));
 app.post('/:eventUrl/logout', logout());
-app.post('/:eventUrl/refresh_token', issueNewAccess(authService));
+app.post('/:eventUrl/refresh-token', issueNewAccess(authService));
 app.post('/:eventUrl/:username/edit', editUser(eventRepo));
 app.get('/:eventUrl', getEvent(eventRepo, authService));
 
