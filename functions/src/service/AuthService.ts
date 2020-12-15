@@ -4,7 +4,7 @@ import { Request } from 'express';
 
 import EventRepo from '../database/EventRepo';
 import TokenService from '../service/TokenService';
-import { setRefreshToken } from '../middleware/CookieMiddleware';
+import { setRefreshToken } from '../middleware/CookieHandler';
 import HttpError from '../model/HttpError';
 
 export default class AuthService {
