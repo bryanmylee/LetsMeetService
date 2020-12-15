@@ -7,8 +7,8 @@ import EventRepo from './database/EventRepo';
 import HttpError from './model/HttpError';
 import { UserSignup, UserLogin, UserScheduleEdit } from './model/RequestBody';
 import { applyPreMiddlewares } from './middlewares';
-import { setRefreshToken, clearRefreshToken } from './middlewares/CookieMiddleware';
-import { errorHandler } from './middlewares/ErrorMiddleware';
+import { setRefreshToken, clearRefreshToken } from './middleware/CookieMiddleware';
+import { errorHandler } from './middleware/ErrorMiddleware';
 
 const app = express();
 applyPreMiddlewares(app);
