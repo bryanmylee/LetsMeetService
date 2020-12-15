@@ -12,9 +12,7 @@ import { newUser, editUser } from './route/User';
 
 const app = express();
 app.use(cookieParser());
-app.use((req, res, next) => {
-  next();
-}, cors({
+app.use(cors<express.Request>({
   origin: functions.config().api.client_host,
   credentials: true,
 }));
