@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions';
 import express from 'express';
 
-import AuthorizationService from './service/AuthorizationService';
+import AuthService from './service/AuthService';
 import Event from './model/Event';
 import EventRepo from './database/EventRepo';
 import { UserSignup, UserLogin, UserScheduleEdit } from './model/RequestBody';
@@ -12,7 +12,7 @@ const app = express();
 applyPreMiddlewares(app);
 
 const eventRepo = new EventRepo();
-const authService = new AuthorizationService(eventRepo);
+const authService = new AuthService(eventRepo);
 
 // Create a new event.
 app.post('/new', async (req, res, next) => {
@@ -37,7 +37,7 @@ app.post('/:eventUrl/new_user', async (req, res, next) => {
     // Parse the request.
     const { eventUrl } = req.params;
     const { username, password, schedule } = req.body as UserSignup;
-    const passwordHash = await AuthorizationService.getPasswordHash(password);
+    const passwordHash = await AuthService.getPasswordHash(password);
     // Handle database logic.
     await eventRepo.insertUserOnEvent(eventUrl, username, passwordHash, schedule);
     // Generate and store tokens.
@@ -60,7 +60,7 @@ app.post('/:eventUrl/login', async (req, res, next) => {
     // Handle database logic.
     const passwordHash = await eventRepo.getUserPasswordHash(eventUrl, username);
     // Verify the request.
-    const valid = await AuthorizationService.comparePasswordHash(password, passwordHash);
+    const valid = await AuthService.comparePasswordHash(password, passwordHash);
     if (!valid) {
       throw new Error('Password invalid');
     }
@@ -100,7 +100,7 @@ app.post('/:eventUrl/:username/edit', async (req, res, next) => {
   try {
     // Parse the request.
     const { eventUrl, username } = req.params;
-    const payload = AuthorizationService.getRequestAuthPayload(req);
+    const payload = AuthService.getRequestAuthPayload(req);
     const { newSchedule } = req.body as UserScheduleEdit;
     // Verify the request.
     if (payload.eventUrl !== eventUrl || payload.username !== username) {

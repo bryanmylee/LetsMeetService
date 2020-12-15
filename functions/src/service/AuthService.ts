@@ -6,7 +6,7 @@ import EventRepo from '../database/EventRepo';
 import TokenService from '../service/TokenService';
 import { setRefreshToken } from '../middlewares/CookieMiddleware';
 
-export default class AuthorizationService {
+export default class AuthService {
 
   constructor(private eventRepo: EventRepo) {}
 
@@ -59,20 +59,22 @@ export default class AuthorizationService {
     if (refreshToken == null) {
       throw new Error('Refresh token not found');
     }
-    // Verify that the token is not tampered with, and retrieve the payload.
+
     const { username } = TokenService.getRefreshTokenBody(refreshToken);
-    // Handle database logic.
     const storedRefreshToken = await this.eventRepo.getUserRefreshToken(eventUrl, username);
     if (storedRefreshToken == null) {
-      throw new Error('User invalid');
+      throw new Error('Refresh token identity mismatch');
     }
+
     if (storedRefreshToken !== refreshToken) {
-      throw new Error('Refresh token invalid');
+      throw new Error('Refresh token is invalid');
     }
-    // Return a response.
+
     const { accessToken, refreshToken: newRefreshToken }
         = await this.generateAndPersistTokens(eventUrl, username);
+
     setRefreshToken(eventUrl, newRefreshToken)(req, res, () => {});
+
     return accessToken;
   }
 
@@ -87,7 +89,6 @@ export default class AuthorizationService {
     const accessToken = TokenService.createAccessToken(eventUrl, username);
     const refreshToken = TokenService.createRefreshToken(eventUrl, username);
 
-    // Store the refresh token in the database.
     await this.eventRepo.setUserRefreshToken(eventUrl, username, refreshToken);
 
     return { accessToken, refreshToken };
