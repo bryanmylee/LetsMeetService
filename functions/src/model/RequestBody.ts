@@ -1,4 +1,4 @@
-import Interval from './Interval';
+import type Interval from './Interval';
 
 export interface UserSignup {
   username: string;

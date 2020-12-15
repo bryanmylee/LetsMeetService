@@ -1,9 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 
-import Event from '../model/Event';
-import HttpError from '../model/HttpError';
-import EventRepo from '../database/EventRepo';
 import AuthService from '../service/AuthService';
+import EventRepo from '../database/EventRepo';
+import HttpError from '../model/HttpError';
+
+import type Event from '../model/Event';
 
 // Create a new event.
 export const newEvent = (eventRepo: EventRepo) =>
@@ -32,7 +33,7 @@ export const getEvent = (eventRepo: EventRepo, authService: AuthService) =>
     const event = await eventRepo.get(eventUrl);
     let accessToken: string | undefined;
     try {
-      accessToken = await authService.refreshAccessToken(req, res);
+      accessToken = await authService.refreshAccessToken(req, res, next);
     } catch {}
 
     res.send({

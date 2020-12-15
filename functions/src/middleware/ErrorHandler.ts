@@ -1,6 +1,6 @@
-import '../model/HttpError';
 import { Request, Response, NextFunction } from 'express';
-import HttpError from '../model/HttpError';
+
+import type HttpError from '../model/HttpError';
 
 export const errorHandler = (
     err: HttpError, req: Request,

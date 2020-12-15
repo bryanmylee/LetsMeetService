@@ -160,7 +160,7 @@ export default class EventRepo {
       eventUrl: string, username: string, refreshToken: string) {
     const eventQuery = await this.queryEvent(eventUrl);
     const userRef = eventQuery.ref.collection('user').doc(username);
-    userRef.set({ refreshToken }, { merge: true });
+    await userRef.set({ refreshToken }, { merge: true });
   }
 
 }

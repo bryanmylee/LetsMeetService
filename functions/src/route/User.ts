@@ -3,8 +3,9 @@ import { Request, Response, NextFunction } from 'express';
 import AuthService from '../service/AuthService';
 import EventRepo from '../database/EventRepo';
 import HttpError from '../model/HttpError';
-import { UserSignup, UserScheduleEdit } from '../model/RequestBody';
 import { setRefreshToken } from '../middleware/CookieHandler';
+
+import type { UserSignup, UserScheduleEdit } from '../model/RequestBody';
 
 // Add a new user to an event.
 export const newUser = (eventRepo: EventRepo, authService: AuthService) =>

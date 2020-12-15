@@ -1,10 +1,10 @@
 import * as functions from 'firebase-functions';
 import cookieParser from 'cookie-parser';
-import cors from 'cors';
 import express from 'express';
 
 import AuthService from './service/AuthService';
 import EventRepo from './database/EventRepo';
+import { corsHandler } from './middleware/CorsHandler';
 import { errorHandler } from './middleware/ErrorHandler';
 import { login, logout, issueNewAccess } from './route/Auth';
 import { newEvent, getEvent } from './route/Event';
@@ -12,10 +12,7 @@ import { newUser, editUser } from './route/User';
 
 const app = express();
 app.use(cookieParser());
-app.use(cors<express.Request>({
-  origin: functions.config().api.client_host,
-  credentials: true,
-}));
+app.use(corsHandler);
 
 const eventRepo = new EventRepo();
 const authService = new AuthService(eventRepo);

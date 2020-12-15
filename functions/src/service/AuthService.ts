@@ -1,11 +1,11 @@
 import * as functions from 'firebase-functions';
 import bcrypt from 'bcryptjs';
-import { Request } from 'express';
+import { Request, Response, NextFunction } from 'express';
 
 import EventRepo from '../database/EventRepo';
+import HttpError from '../model/HttpError';
 import TokenService from '../service/TokenService';
 import { setRefreshToken } from '../middleware/CookieHandler';
-import HttpError from '../model/HttpError';
 
 export default class AuthService {
 
@@ -54,7 +54,7 @@ export default class AuthService {
    * @param res The HTTP/S response to send.
    * @returns A promise that resolves with the new access token.
    */
-  async refreshAccessToken(req: any, res: any) {
+  async refreshAccessToken(req: Request, res: Response, next: NextFunction) {
     const { eventUrl } = req.params;
     const refreshToken: string = req.cookies['__session'];
     if (refreshToken == null) {
@@ -74,7 +74,7 @@ export default class AuthService {
     const { accessToken, refreshToken: newRefreshToken }
         = await this.generateAndPersistTokens(eventUrl, username);
 
-    setRefreshToken(eventUrl, newRefreshToken)(req, res, () => {});
+    setRefreshToken(eventUrl, newRefreshToken)(req, res, next);
 
     return accessToken;
   }

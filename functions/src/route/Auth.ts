@@ -3,8 +3,9 @@ import { Request, Response, NextFunction } from 'express';
 import AuthService from '../service/AuthService';
 import EventRepo from '../database/EventRepo';
 import HttpError from '../model/HttpError';
-import { UserLogin } from '../model/RequestBody';
 import { setRefreshToken, clearRefreshToken } from '../middleware/CookieHandler';
+
+import type { UserLogin } from '../model/RequestBody';
 
 // Log a user into an event.
 export const login = (eventRepo: EventRepo, authService: AuthService) =>
@@ -44,7 +45,7 @@ export const logout = () =>
 export const issueNewAccess = (authService: AuthService) =>
     async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const accessToken = await authService.refreshAccessToken(req, res)
+    const accessToken = await authService.refreshAccessToken(req, res, next);
     res.send({ accessToken });
   } catch (err) {
     next(err);
