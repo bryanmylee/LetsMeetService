@@ -16,7 +16,7 @@ export default class AuthService {
    * @param password The password to create a hash for.
    * @returns A promise that resolves with the generated hash.
    */
-  static async getPasswordHash(password: string) {
+  async getPasswordHash(password: string) {
     const saltLengthStr = functions.config().api.password_salt_length ?? '12';
     const saltLength = parseInt(saltLengthStr, 10);
     return await bcrypt.hash(password, saltLength);
@@ -28,7 +28,7 @@ export default class AuthService {
    * @param hash     The hash to compare against.
    * @returns A promise that resolves with true if the password is valid.
    */
-  static async comparePasswordHash(password: string, hash: string) {
+  async comparePasswordHash(password: string, hash: string) {
     return await bcrypt.compare(password, hash);
   }
 
