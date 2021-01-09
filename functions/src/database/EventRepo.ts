@@ -41,7 +41,7 @@ export default class EventRepo {
    * @returns An pair of the new internal identifier and new url idenfifier.
    */
   async insert(
-      title: string, description: string,
+      title: string, description: string = '',
       color: string, schedule: Interval[]) {
     const newEventRef = this.repo.doc();
     const eventUrl = generateId(newEventRef.id, 2);
